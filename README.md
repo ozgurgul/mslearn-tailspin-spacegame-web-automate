@@ -1,3 +1,18 @@
+Team Foundation Server is now called Azure DevOps Server
+
+On September 10, 2018, Microsoft renamed Visual Studio Team Services (VSTS) to Azure DevOps Services. With Azure DevOps Server 2019, Microsoft is renaming Visual Studio Team Foundation Server to Azure DevOps Server.
+
+You define and manage service connections from the Admin settings of your project:
+
+Azure DevOps: https://dev.azure.com/{organization}/{project}/_settings/adminservices
+e.g.
+https://dev.azure.com/sandpit-devops/TailspinWebSpace/_settings/adminservices
+
+TFS: https://{tfsserver}/{collection}/{project}/_admin/_services
+
+# List Azure Locations 
+az account list-locations   --query "[].{Name: name, DisplayName: displayName}"   --output table
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
