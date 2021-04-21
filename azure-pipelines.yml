@@ -124,7 +124,7 @@ stages:
           - script: echo $(WebAppNameDev) # this step uses the mapped-in variable
             name: echovar
           - script: |
-              echo ##vso[task.setvariable variable=WebAppName;]echo $(WebAppNameDev)
+              echo "##vso[task.setvariable variable=WebAppName;]$(WebAppNameDev)"
             displayName: 'Run a one-line script'
           - script: |
               echo $(WebAppName)  
