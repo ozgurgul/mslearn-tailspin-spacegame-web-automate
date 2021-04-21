@@ -121,9 +121,8 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: | 
-              FOO=$(echo $(WebAppNameDev) | sed "s/\"//g")
-            name: echovar   
+          - script: echo $(WebAppNameDev) # this step uses the mapped-in variable
+            name: echovar  
           - download: current
             artifact: drop
           - task: AzureWebApp@1
@@ -132,7 +131,6 @@ stages:
               azureSubscription: 'Resource Manager - Tailspin - Space Game'
               ##[error]Error: Resource '"tailspin-space-game-web-dev-2444"' doesn't exist. Resource should exist before deployment.
               #appName: $(WebAppNameDev)
-              appName: $(FOO)
               # as a workaround I had to hardcode App Name
-              #appName: 'tailspin-space-game-web-dev-2444'
+              appName: $[ dependencies.Provision.outputs['RunTerraform.WebAppNameDev'] ]
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
