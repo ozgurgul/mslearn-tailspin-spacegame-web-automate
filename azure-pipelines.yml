@@ -112,6 +112,7 @@ stages:
   - deployment: deploy
     dependsOn: Provision
     variables:
+      # map the output variable from A into this job
       WebAppNameDev: $[ dependencies.Provision.outputs['RunTerraform.WebAppNameDev'] ]
     pool:
       vmImage: 'ubuntu-18.04'
@@ -120,11 +121,13 @@ stages:
       runOnce:
         deploy:
           steps:
+          - script: echo $(WebAppNameDev) # this step uses the mapped-in variable
+            name: echovar  
           - download: current
             artifact: drop
           - task: AzureWebApp@1
             displayName: 'Azure App Service Deploy: website'
             inputs:
               azureSubscription: 'Resource Manager - Tailspin - Space Game'
-              appName: '$(WebAppNameDev)'
+              appName: $(WebAppNameDev)
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
