@@ -132,5 +132,5 @@ stages:
               ##[error]Error: Resource '"tailspin-space-game-web-dev-2444"' doesn't exist. Resource should exist before deployment.
               #appName: $(WebAppNameDev)
               # as a workaround I had to hardcode App Name
-              appName: $[ dependencies.Provision.outputs['RunTerraform.WebAppNameDev'] ]
+              appName: 'tailspin-space-game-web-dev-2444'
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
