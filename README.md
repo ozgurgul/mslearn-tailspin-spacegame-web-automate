@@ -13,6 +13,45 @@ TFS: https://{tfsserver}/{collection}/{project}/_admin/_services
 # List Azure Locations 
 az account list-locations   --query "[].{Name: name, DisplayName: displayName}"   --output table
 
+## Housekeeping 
+
+1. Go to the Cloud Shell
+
+2. Run the following az group delete command to delete the resource group for your App Service deployment, tailspin-space-game-rg.
+
+`az group delete --name tailspin-space-game-rg --yes`
+
+3. Run the following az group delete command to delete the resource group for your storage account, tf-storage-rg.
+
+`az group delete --name tf-storage-rg --yes`
+
+As an optional step, run the following az group list command after the previous command finishes.
+
+`az group list --output table`
+
+You see that the resource groups tailspin-space-game-rg and tf-storage-rg no longer exist.
+
+To delete your service principal:
+
+Run the following az ad sp list command to list the service principals in your Azure subscription.
+
+
+`az ad sp list --show-mine --query [].servicePrincipalNames`
+
+Locate the service principal that you created in this module. The name begins with http://tf-sp- and ends with your unique ID. Here's an example:
+
+```JSON
+[
+  [
+    "http://tf-sp-28277",
+    "198244ba-dc73-4561-acea-356c513b0c37"
+  ]
+]
+```
+Run the following az ad sp delete command to delete your service principal. Replace the name shown here with yours.
+
+`az ad sp delete --id http://tf-sp-28277`
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
