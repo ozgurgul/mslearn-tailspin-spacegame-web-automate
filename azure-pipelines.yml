@@ -127,7 +127,8 @@ stages:
               echo "##vso[task.setvariable variable=WebAppName;]$(WebAppNameDev)"
             displayName: 'Run a one-line script'
           - script: |
-              echo $(WebAppName)  
+              echo $(WebAppName) 
+            displayName: '=== DEBUG LINE ==='   
           - download: current
             artifact: drop
           - task: AzureWebApp@1
