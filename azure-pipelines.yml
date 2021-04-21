@@ -113,8 +113,7 @@ stages:
     dependsOn: Provision
     variables:
       # map the output variable from A into this job
-      name: WebAppNameDev
-      value: $[ dependencies.Provision.outputs['RunTerraform.WebAppNameDev'] ]
+      WebAppNameDev: $[ dependencies.Provision.outputs['RunTerraform.WebAppNameDev'] ]
     pool:
       vmImage: 'ubuntu-18.04'
     environment: dev
@@ -124,6 +123,8 @@ stages:
           steps:
           - script: echo $(WebAppNameDev) # this step uses the mapped-in variable
             name: echovar  
+          - bash: echo '##vso[task.setvariable variable=WebAppNameDev;]$(WebAppNameDev)'
+            displayName: Set new variable value AGAIN  
           - download: current
             artifact: drop
           - task: AzureWebApp@1
