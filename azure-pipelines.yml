@@ -121,7 +121,7 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: echo '${WebAppNameDev}' # this step uses the mapped-in variable
+          - script: echo '$(WebAppNameDev)' # this step uses the mapped-in variable
             name: echovar  
           - download: current
             artifact: drop
