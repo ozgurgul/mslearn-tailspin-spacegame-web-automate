@@ -101,7 +101,7 @@ stages:
         WebAppNameDev=$(terraform output appservice_name_dev) 
 
         # Write the WebAppNameDev variable to the pipeline.
-        echo "##vso[task.setvariable variable=WebAppNameDev;isOutput=true]$WebAppNameDev"
+        echo "##vso[task.setvariable variable=WebAppNameDev;isOutput=true]$(WebAppNameDev)"
       name: 'RunTerraform'
       displayName: 'Run Terraform'
       env:
@@ -130,7 +130,7 @@ stages:
             inputs:
               azureSubscription: 'Resource Manager - Tailspin - Space Game'
               ##[error]Error: Resource '"tailspin-space-game-web-dev-2444"' doesn't exist. Resource should exist before deployment.
-              appName: ${WebAppNameDev}
+              appName: $(WebAppNameDev)
               # as a workaround I had to hardcode App Name
               #appName: 'tailspin-space-game-web-dev-2444'
               package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
