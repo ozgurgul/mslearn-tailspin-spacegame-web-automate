@@ -25,9 +25,11 @@ stages:
         echo 'vm_count = "'$(VmCount)'"' | tee -a terraform.tfvars
         echo 'vm_image_string = "'$(VmImageString)'"' | tee -a terraform.tfvars
         echo 'vm_size = "'$(VmSize)'"' | tee -a terraform.tfvars
+        echo 'rg_name = "'$(RgName)'"' | tee -a terraform.tfvars
         echo 'rg_tag = "'$(RgTag)'"' | tee -a terraform.tfvars
         echo 'admin_username = "'$(AdminUsername)'"' | tee -a terraform.tfvars
         echo 'admin_password = "'$(AdminPassword)'"' | tee -a terraform.tfvars
+
 
         # Write backend.tfvars.
         echo 'resource_group_name = "'$(ResourceGroupName)'"'  | tee backend.tfvars
