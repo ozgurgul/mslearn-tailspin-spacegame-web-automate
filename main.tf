@@ -14,16 +14,6 @@ terraform {
 # You can also put the content of variables.tf at the top of the main.tf file.
 #########
 
-variable "arm_endpoint" { }
-
-variable "subscription_id" { }
-
-variable "client_id" { }
-
-variable "client_secret" { }
-
-variable "tenant_id" { }
-
 variable "admin_username" {
   default = "testadmin"
 }
@@ -73,11 +63,6 @@ variable "prefix" {
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
   features {}
-  # arm_endpoint    = var.arm_endpoint # for azurestack
-  subscription_id = var.subscription_id
-  client_id       = var.client_id
-  client_secret   = var.client_secret
-  tenant_id       = var.tenant_id
 }
 
 # Create a resource group
