@@ -30,13 +30,13 @@ stages:
         echo 'admin_password = "'$(AdminPassword)'"' | tee -a terraform.tfvars
         
         # Write backend.tfvars.
-        echo 'resource_group_name = "'$(ResourceGroupName)'"'  | tee backend.tfvars
-        echo 'storage_account_name = "'$(StorageAccountName)'"' | tee -a backend.tfvars
-        echo 'container_name = "tfstate"' | tee -a backend.tfvars
-        echo 'key = "terraform.tfstate"' | tee -a backend.tfvars
+        echo 'resource_group_name = "'$(ResourceGroupName)'"'  | tee -a terraform.tfvars
+        echo 'storage_account_name = "'$(StorageAccountName)'"' | tee -a terraform.tfvars
+        echo 'container_name = "tfstate"' | tee -a terraform.tfvars
+        echo 'key = "terraform.tfstate"' | tee -a terraform.tfvars
 
         # Initialize Terraform.
-        terraform init --input=false --backend-config="backend.tfvars"
+        terraform init --input=false --backend-config="terraform.tfvars"
         
         # Apply the Terraform plan.
         terraform apply --input=false --auto-approve
