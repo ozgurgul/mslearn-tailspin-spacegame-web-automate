@@ -21,9 +21,16 @@ stages:
         set -e
 
         # Write terraform.tfvars.
-        echo 'resource_group_location = "'$(ResourceGroupLocation)'"' | tee terraform.tfvars
+        echo 'location = "'$(ResourceGroupLocation)'"' | tee terraform.tfvars
+        echo 'vm_count = "'$(VmCount)'"' | tee -a terraform.tfvars
+        echo 'vm_image_string = "'$(VmImageString)'"' | tee -a terraform.tfvars
+        echo 'vm_size = "'$(VmSize)'"' | tee -a terraform.tfvars
+        echo 'rg_tag = "'$(RgTag)'"' | tee -a terraform.tfvars
+        echo 'admin_username = "'$(AdminUsername)'"' | tee -a terraform.tfvars
+        echo 'admin_password = "'$(AdminPassword)'"' | tee -a terraform.tfvars
+        
         # Write backend.tfvars.
-        echo 'resource_group_name = "tf-storage-rg"' | tee backend.tfvars
+        echo 'resource_group_name = "'$(ResourceGroupName)'"'  | tee backend.tfvars
         echo 'storage_account_name = "'$(StorageAccountName)'"' | tee -a backend.tfvars
         echo 'container_name = "tfstate"' | tee -a backend.tfvars
         echo 'key = "terraform.tfstate"' | tee -a backend.tfvars
@@ -31,20 +38,24 @@ stages:
         # Initialize Terraform.
         terraform init -input=false -backend-config="backend.tfvars"
         
+        # Apply the Terraform plan.
+        terraform apply -input=false -auto-approve
+        
+        # Get the Analytics name for the dev environment.
+        AnalyticsHostname=$(terraform output hostname) 
+        AnalyticsAddress=$(terraform output public_ip_address) 
+        
+        # Write the AnalyticsHostname and AnalyticsAddress variables to the pipeline.
+        echo "##vso[task.setvariable variable=AnalyticsHostname;isOutput=true]$AnalyticsHostname"
+        echo "##vso[task.setvariable variable=AnalyticsAddress;isOutput=true]$AnalyticsAddress"
+        
         # Apply the Terraform destroy.
         # terraform destroy -input=false -auto-approve
 
-        # Apply the Terraform plan.
-        terraform apply -input=false -auto-approve
-
-        # Get the App Service name for the dev environment.
-        WebAppNameDev=$(terraform output appservice_name_dev) 
-
-        # Write the WebAppNameDev variable to the pipeline.
-        echo "##vso[task.setvariable variable=WebAppNameDev;isOutput=true]$WebAppNameDev"
       name: 'RunTerraform'
       displayName: 'Run Terraform'
       env:
+        #ARM_ENDPOINT: $(ARM_ENDPOINT)
         ARM_CLIENT_ID: $(ARM_CLIENT_ID)
         ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
         ARM_TENANT_ID: $(ARM_TENANT_ID)
@@ -53,7 +64,8 @@ stages:
     dependsOn: Provision
     variables:
       # map the output variable from A into this job
-      WebAppNameDev: $[ dependencies.Provision.outputs['RunTerraform.WebAppNameDev'] ]
+      AnalyticsHostname: $[ dependencies.Provision.outputs['RunTerraform.AnalyticsHostname'] ]
+      AnalyticsAddress: $[ dependencies.Provision.outputs['RunTerraform.AnalyticsAddress'] ]
     pool:
       vmImage: 'ubuntu-18.04'
     environment: dev
@@ -61,22 +73,12 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: echo $(WebAppNameDev) # this step uses the mapped-in variable
+          - script: echo $(AnalyticsAddress) # this step uses the mapped-in variable
             name: echovar
           - script: |
-              echo "##vso[task.setvariable variable=WebAppName;]$(WebAppNameDev)"
+              echo "##vso[task.setvariable variable=AnalyticsAddress;]$(AnalyticsAddress)"
             displayName: 'Run a one-line script'
           - script: |
-              echo $(WebAppName) 
+              echo $(AnalyticsAddress) 
             displayName: '=== DEBUG LINE ==='   
-          - download: current
-            artifact: drop
-          - task: AzureWebApp@1
-            displayName: 'Azure App Service Deploy: website'
-            inputs:
-              azureSubscription: 'Resource Manager - Tailspin - Space Game'
-              ##[error]Error: Resource '"tailspin-space-game-web-dev-2444"' doesn't exist. Resource should exist before deployment.
-              appName: $(WebAppName)
-              # as a workaround I had to hardcode App Name
-              #appName: 'tailspin-space-game-web-dev-2444'
-              package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
+       
