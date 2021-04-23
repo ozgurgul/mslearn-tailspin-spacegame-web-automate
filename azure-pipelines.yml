@@ -28,12 +28,12 @@ stages:
         echo 'rg_tag = "'$(RgTag)'"' | tee -a terraform.tfvars
         echo 'admin_username = "'$(AdminUsername)'"' | tee -a terraform.tfvars
         echo 'admin_password = "'$(AdminPassword)'"' | tee -a terraform.tfvars
-        
+
         # Write backend.tfvars.
-        echo 'resource_group_name = "'$(ResourceGroupName)'"'  | tee -a terraform.tfvars
-        echo 'storage_account_name = "'$(StorageAccountName)'"' | tee -a terraform.tfvars
-        echo 'container_name = "tfstate"' | tee -a terraform.tfvars
-        echo 'key = "terraform.tfstate"' | tee -a terraform.tfvars
+        echo 'resource_group_name = "'$(ResourceGroupName)'"'  | tee backend.tfvars
+        echo 'storage_account_name = "'$(StorageAccountName)'"' | tee -a backend.tfvars
+        echo 'container_name = "tfstate"' | tee -a backend.tfvars
+        echo 'key = "terraform.tfstate"' | tee -a backend.tfvars
 
         # Initialize Terraform.
         terraform init --input=false --backend-config="terraform.tfvars"
@@ -55,7 +55,7 @@ stages:
       name: 'RunTerraform'
       displayName: 'Run Terraform'
       env:
-        #ARM_ENDPOINT: $(ARM_ENDPOINT)
+        ARM_ENDPOINT: $(ARM_ENDPOINT)
         ARM_CLIENT_ID: $(ARM_CLIENT_ID)
         ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
         ARM_TENANT_ID: $(ARM_TENANT_ID)
