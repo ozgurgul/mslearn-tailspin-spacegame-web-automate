@@ -4,8 +4,11 @@ trigger:
 variables:
   buildConfiguration: 'Release'
 
+stages:
+
 - stage: 'Dev'
   displayName: 'Deploy to the dev environment'
+  dependsOn: Build
   jobs:
   - job: Provision
     displayName: 'Provision Azure App Service'
@@ -19,42 +22,30 @@ variables:
         set -e
 
         # Write terraform.tfvars.
-        echo 'location = "'$(ResourceGroupLocation)'"' | tee terraform.tfvars
-        echo 'vm_count = "'$(VmCount)'"' | tee -a terraform.tfvars
-        echo 'vm_image_string = "'$(VmImageString)'"' | tee -a terraform.tfvars
-        echo 'vm_size = "'$(VmSize)'"' | tee -a terraform.tfvars
-        echo 'rg_tag = "'$(RgTag)'"' | tee -a terraform.tfvars
-        echo 'admin_username = "'$(AdminUsername)'"' | tee -a terraform.tfvars
-        echo 'admin_password = "'$(AdminPassword)'"' | tee -a terraform.tfvars
-        
+        echo 'resource_group_location = "'$(ResourceGroupLocation)'"' | tee terraform.tfvars
         # Write backend.tfvars.
-        echo 'resource_group_name = "'$(ResourceGroupName)'"'  | tee backend.tfvars
+        echo 'resource_group_name = "tf-storage-rg"' | tee backend.tfvars
         echo 'storage_account_name = "'$(StorageAccountName)'"' | tee -a backend.tfvars
         echo 'container_name = "tfstate"' | tee -a backend.tfvars
         echo 'key = "terraform.tfstate"' | tee -a backend.tfvars
 
         # Initialize Terraform.
         terraform init -input=false -backend-config="backend.tfvars"
+        
+        # Apply the Terraform destroy.
+        # terraform destroy -input=false -auto-approve
 
         # Apply the Terraform plan.
         terraform apply -input=false -auto-approve
 
-        # Get the Analytics name for the dev environment.
-        AnalyticsHostname=$(terraform output hostname) 
-        AnalyticsAddress=$(terraform output public_ip_address) 
-
+        # Get the App Service name for the dev environment.
+        WebAppNameDev=$(terraform output appservice_name_dev) 
 
         # Write the WebAppNameDev variable to the pipeline.
-        echo "##vso[task.setvariable variable=AnalyticsHostname;isOutput=true]$AnalyticsHostname"
-        echo "##vso[task.setvariable variable=AnalyticsAddress;isOutput=true]$AnalyticsAddress"
-
-        # Apply the Terraform destroy.
-        # terraform destroy -input=false -auto-approve
-
+        echo "##vso[task.setvariable variable=WebAppNameDev;isOutput=true]$WebAppNameDev"
       name: 'RunTerraform'
       displayName: 'Run Terraform'
       env:
-        #ARM_ENDPOINT: $(ARM_ENDPOINT)
         ARM_CLIENT_ID: $(ARM_CLIENT_ID)
         ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
         ARM_TENANT_ID: $(ARM_TENANT_ID)
