@@ -1,7 +1,7 @@
 # We strongly recommend using the required_providers block to set the
 # Azure Provider source and version being used
 terraform {
-  
+
    backend "azurerm" {
   }
   required_providers {
@@ -190,12 +190,35 @@ resource "azurerm_virtual_machine" "vm" {
     admin_username = var.admin_username
     admin_password = var.admin_password
   }
-   
+
+  # dynamic "os_profile_linux_config" {
+  #   for_each = var.vm_type == "Linux" ? [1] : []
+  #   content {
+  #     disable_password_authentication = var.os_profile_linux_config_disable_password_authentication
+
+  #     dynamic "ssh_keys" {
+  #       for_each = var.os_profile_linux_config_ssh_keys
+
+  #       content {
+  #         key_data = ssh_keys.value.key_data
+  #         path     = format("/home/%s/.ssh/authorized_keys", var.os_profile_admin_username)
+  #       }
+  #     }
+  #   }
+  # }
+
   os_profile_linux_config {
     disable_password_authentication = false
   }
 
   tags = azurerm_resource_group.rg.tags
+}
+
+resource "azurerm_ssh_public_key" "copy-pub-key" {
+  name                = "copy_pub_key"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  public_key          = file("~/.ssh/id_rsa.pub")
 }
 
 output "public_ip_address" {
