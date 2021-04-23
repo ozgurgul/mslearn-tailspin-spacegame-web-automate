@@ -1,4 +1,37 @@
-Team Foundation Server is now called Azure DevOps Server
+# Check if your environment is setup correctly
+`.\terraform.exe init`
+
+Initializing provider plugins...
+
+The following providers do not have any version constraints in configuration,
+so the latest version was installed.
+
+To prevent automatic upgrades to new major versions that may contain breaking
+changes, it is recommended to add version = "..." constraints to the
+corresponding provider blocks in configuration, with the constraint strings
+suggested below.
+
+* provider.azurestack: version = "~> 0.8"
+* provider.random: version = "~> 2.1"
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "Terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
+
+# Verify your plan
+.\terraform.exe plan -var-file=C:\<DirectoryName>\terraform.tfvars
+# Apply your plan
+.\terraform.exe apply -var-file=C:\<DirectoryName>\terraform.tfvars
+
+
+### Team Foundation Server is now called Azure DevOps Server
 
 On September 10, 2018, Microsoft renamed Visual Studio Team Services (VSTS) to Azure DevOps Services. With Azure DevOps Server 2019, Microsoft is renaming Visual Studio Team Foundation Server to Azure DevOps Server.
 

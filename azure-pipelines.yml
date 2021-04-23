@@ -4,70 +4,8 @@ trigger:
 variables:
   buildConfiguration: 'Release'
 
-stages:
-- stage: 'Build'
-  displayName: 'Build the web application'
-  jobs: 
-  - job: 'Build'
-    displayName: 'Build job'
-    pool:
-      vmImage: 'ubuntu-18.04'
-      demands:
-      - npm
-
-    variables:
-      wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
-      dotnetSdkVersion: '3.1.300'
-
-    steps:
-    - task: UseDotNet@2
-      displayName: 'Use .NET Core SDK $(dotnetSdkVersion)'
-      inputs:
-        version: '$(dotnetSdkVersion)'
-
-    - task: Npm@1
-      displayName: 'Run npm install'
-      inputs:
-        verbose: false
-
-    - script: './node_modules/.bin/node-sass $(wwwrootDir) --output $(wwwrootDir)'
-      displayName: 'Compile Sass assets'
-
-    - task: gulp@1
-      displayName: 'Run gulp tasks'
-
-    - script: 'echo "$(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)" > buildinfo.txt'
-      displayName: 'Write build info'
-      workingDirectory: $(wwwrootDir)
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Restore project dependencies'
-      inputs:
-        command: 'restore'
-        projects: '**/*.csproj'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Build the project - $(buildConfiguration)'
-      inputs:
-        command: 'build'
-        arguments: '--no-restore --configuration $(buildConfiguration)'
-        projects: '**/*.csproj'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Publish the project - $(buildConfiguration)'
-      inputs:
-        command: 'publish'
-        projects: '**/*.csproj'
-        publishWebProjects: false
-        arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
-        zipAfterPublish: true
-
-    - publish: '$(Build.ArtifactStagingDirectory)'
-      artifact: drop
-
 - stage: 'Dev'
   displayName: 'Deploy to the dev environment'
-  dependsOn: Build
   jobs:
   - job: Provision
     displayName: 'Provision Azure App Service'
@@ -81,30 +19,42 @@ stages:
         set -e
 
         # Write terraform.tfvars.
-        echo 'resource_group_location = "'$(ResourceGroupLocation)'"' | tee terraform.tfvars
+        echo 'location = "'$(ResourceGroupLocation)'"' | tee terraform.tfvars
+        echo 'vm_count = "'$(VmCount)'"' | tee -a terraform.tfvars
+        echo 'vm_image_string = "'$(VmImageString)'"' | tee -a terraform.tfvars
+        echo 'vm_size = "'$(VmSize)'"' | tee -a terraform.tfvars
+        echo 'rg_tag = "'$(RgTag)'"' | tee -a terraform.tfvars
+        echo 'admin_username = "'$(AdminUsername)'"' | tee -a terraform.tfvars
+        echo 'admin_password = "'$(AdminPassword)'"' | tee -a terraform.tfvars
+        
         # Write backend.tfvars.
-        echo 'resource_group_name = "tf-storage-rg"' | tee backend.tfvars
+        echo 'resource_group_name = "'$(ResourceGroupName)'"'  | tee backend.tfvars
         echo 'storage_account_name = "'$(StorageAccountName)'"' | tee -a backend.tfvars
         echo 'container_name = "tfstate"' | tee -a backend.tfvars
         echo 'key = "terraform.tfstate"' | tee -a backend.tfvars
 
         # Initialize Terraform.
         terraform init -input=false -backend-config="backend.tfvars"
-        
-        # Apply the Terraform destroy.
-        # terraform destroy -input=false -auto-approve
 
         # Apply the Terraform plan.
         terraform apply -input=false -auto-approve
 
-        # Get the App Service name for the dev environment.
-        WebAppNameDev=$(terraform output appservice_name_dev) 
+        # Get the Analytics name for the dev environment.
+        AnalyticsHostname=$(terraform output hostname) 
+        AnalyticsAddress=$(terraform output public_ip_address) 
+
 
         # Write the WebAppNameDev variable to the pipeline.
-        echo "##vso[task.setvariable variable=WebAppNameDev;isOutput=true]$WebAppNameDev"
+        echo "##vso[task.setvariable variable=AnalyticsHostname;isOutput=true]$AnalyticsHostname"
+        echo "##vso[task.setvariable variable=AnalyticsAddress;isOutput=true]$AnalyticsAddress"
+
+        # Apply the Terraform destroy.
+        # terraform destroy -input=false -auto-approve
+
       name: 'RunTerraform'
       displayName: 'Run Terraform'
       env:
+        #ARM_ENDPOINT: $(ARM_ENDPOINT)
         ARM_CLIENT_ID: $(ARM_CLIENT_ID)
         ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
         ARM_TENANT_ID: $(ARM_TENANT_ID)
