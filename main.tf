@@ -149,10 +149,17 @@ resource "tls_private_key" "example_ssh" {
   rsa_bits = 4096
 }
 
+# Since it is sensitive information and available in terraform.tfstate file in Blob Storage
 output "tls_private_key" { 
+  description = "The Private key for the Linux Servers."
   value = tls_private_key.example_ssh.private_key_pem 
   # sensitive must be true when referencing a sensitive input variable
   sensitive = true
+}
+
+output "tls_private_key" { 
+  description = "The Public key for the Linux Servers."
+  value = tls_private_key.example_ssh.public_key_openssh 
 }
 
 # Create virtual machine
