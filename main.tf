@@ -215,9 +215,10 @@ resource "azurerm_managed_disk" "data_disk" {
 }
 
 resource "azurerm_virtual_machine_data_disk_attachment" "data-disk" {
+  count              = var.vm_count
   managed_disk_id    = azurerm_managed_disk.data_disk[count.index].id
   virtual_machine_id = azurerm_linux_virtual_machine.vm[count.index].id
-  lun                = "10"
+  lun                = format("%d", 10 + count.index)
   caching            = "ReadWrite"
 }
 
