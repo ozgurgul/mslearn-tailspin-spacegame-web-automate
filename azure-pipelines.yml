@@ -82,5 +82,26 @@ stages:
             displayName: 'Run a one-line script'
           - script: |
               echo $(AnalyticsAddress) 
-            displayName: '=== DEBUG LINE ==='   
+            displayName: '=== DEBUG LINE ==='
+          
+          # - task: DownloadSecureFile@1
+          #   name: 'id_rsa'
+          #   displayName: 'Download id_rsa.pub'
+          #   inputs:
+          #     secureFile: 'id_rsa.pub'
+          
+          # - script: |
+          #     echo Installing the .ssh directory...
+          #     sudo chown root:root $(caCertificate.secureFilePath)
+          #     sudo chmod a+r $(caCertificate.secureFilePath)
+          #     sudo ln -s -t /etc/ssl/certs/ $(caCertificate.secureFilePath)
+
+          # - task: InstallSSHKey@0
+          #   displayName: 'Install an SSH key'
+          #   inputs:
+          #     knownHostsEntry: 'SHA256:1Hyrss55tsxGifESBMc0s+2NtutnR/4+LOkVwrOGrIp8U johndoe@contoso'
+          #     sshPublicKey: '$(myPubKey)'
+          #     sshKeySecureFile: 'id_rsa'
+        
+
        

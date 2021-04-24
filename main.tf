@@ -214,11 +214,77 @@ resource "azurerm_virtual_machine" "vm" {
   tags = azurerm_resource_group.rg.tags
 }
 
-resource "azurerm_ssh_public_key" "copy-pub-key" {
-  name                = "copy_pub_key"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  public_key          = file("~/.ssh/id_rsa.pub")
+###########################################################
+# Create (and display) an SSH key
+resource "tls_private_key" "example_ssh" {
+  algorithm = "RSA"
+  rsa_bits = 4096
+}
+output "tls_private_key" { value = tls_private_key.example_ssh.private_key_pem }
+
+# Create virtual machine
+resource "azurerm_linux_virtual_machine" "vm" {
+  
+  count                 = var.vm_count
+  name                  = format("vm-%02d", count.index + 1)
+  location              = azurerm_resource_group.rg.location
+  resource_group_name   = azurerm_resource_group.rg.name
+  network_interface_ids = [element(azurerm_network_interface.nic.*.id, count.index)]
+  vm_size               = var.vm_size
+
+  os_disk {
+    name                = format("vm-%02d-OS-Disk", count.index + 1)
+    caching             = "ReadWrite"
+    managed_disk_type   = "Standard_LRS"
+  }
+
+  storage_image_reference {
+    publisher = element(split("/", var.vm_image_string), 0)
+    offer     = element(split("/", var.vm_image_string), 1)
+    sku       = element(split("/", var.vm_image_string), 2)
+    version   = element(split("/", var.vm_image_string), 3)
+  }
+
+  plan {
+    publisher = element(split("/", var.vm_image_string), 0)
+    name      = element(split("/", var.vm_image_string), 1)
+    product   = element(split("/", var.vm_image_string), 2)
+  }
+
+  computer_name  = format("host-%02d", count.index + 1)
+  admin_username = var.admin_username
+  admin_password = var.admin_password
+  disable_password_authentication = false
+
+  admin_ssh_key {
+      username       = var.admin_username
+      public_key     = tls_private_key.example_ssh.public_key_openssh
+  }
+
+  # boot_diagnostics {
+  #     storage_account_uri = azurerm_storage_account.mystorageaccount.primary_blob_endpoint
+  # }
+
+  tags = {
+      environment = azurerm_resource_group.rg.tags
+  }
+}
+
+# Optional data disks
+resource "azurerm_managed_disk" "data_disk" {
+  name                 = format("vm-%02d-OS-Disk", count.index + 1)
+  location             = azurerm_resource_group.rg.location
+  resource_group_name  = azurerm_resource_group.rg.name
+  storage_account_type = "Standard_LRS"
+  create_option        = "Empty"
+  disk_size_gb         = 10
+}
+
+resource "azurerm_virtual_machine_data_disk_attachment" "example" {
+  managed_disk_id    = azurerm_managed_disk.data_disk.id
+  virtual_machine_id = azurerm_linux_virtual_machine.vm.id
+  lun                = "10"
+  caching            = "ReadWrite"
 }
 
 output "public_ip_address" {

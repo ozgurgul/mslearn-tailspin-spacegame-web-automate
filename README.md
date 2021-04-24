@@ -30,6 +30,14 @@ commands will detect it and remind you to do so if necessary.
 # Apply your plan
 .\terraform.exe apply -var-file=C:\<DirectoryName>\terraform.tfvars
 
+# Create a service principal
+You've configured Terraform to access the state file remotely. Next, you create the service principal that can authenticate with Azure on your behalf.
+https://docs.microsoft.com/en-us/learn/modules/provision-infrastructure-azure-pipelines/6-run-terraform-remote-storage
+
+# Delete the state file from Blob storage
+Here, you delete your state file from Blob storage.
+https://docs.microsoft.com/en-us/learn/modules/provision-infrastructure-azure-pipelines/6-run-terraform-remote-storage
+
 
 ### Team Foundation Server is now called Azure DevOps Server
 
