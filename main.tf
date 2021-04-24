@@ -206,7 +206,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
 # Optional data disks
 resource "azurerm_managed_disk" "data_disk" {
   count                = var.vm_count
-  name                 = format("vm-%02d-OS-Disk", count.index + 1)
+  name                 = format("vm-%02d-Data-Disk", count.index + 1)
   location             = azurerm_resource_group.rg.location
   resource_group_name  = azurerm_resource_group.rg.name
   storage_account_type = "Standard_LRS"
