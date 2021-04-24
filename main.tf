@@ -198,7 +198,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   # }
 
   tags = {
-      environment = azurerm_resource_group.rg.tags
+    environment = var.rg_tag
   }
 }
 
