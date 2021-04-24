@@ -157,7 +157,7 @@ output "tls_private_key" {
   sensitive = true
 }
 
-output "tls_private_key" { 
+output "tls_public_key" { 
   description = "The Public key for the Linux Servers."
   value = tls_private_key.example_ssh.public_key_openssh 
 }
