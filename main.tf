@@ -148,6 +148,7 @@ resource "tls_private_key" "example_ssh" {
   algorithm = "RSA"
   rsa_bits = 4096
 }
+
 output "tls_private_key" { 
   value = tls_private_key.example_ssh.private_key_pem 
   # sensitive must be true when referencing a sensitive input variable
@@ -214,8 +215,8 @@ resource "azurerm_managed_disk" "data_disk" {
 }
 
 resource "azurerm_virtual_machine_data_disk_attachment" "example" {
-  managed_disk_id    = azurerm_managed_disk.data_disk.*.id
-  virtual_machine_id = azurerm_linux_virtual_machine.vm.*.id
+  managed_disk_id    = azurerm_managed_disk.data_disk.id
+  virtual_machine_id = azurerm_linux_virtual_machine.vm.id
   lun                = "10"
   caching            = "ReadWrite"
 }
