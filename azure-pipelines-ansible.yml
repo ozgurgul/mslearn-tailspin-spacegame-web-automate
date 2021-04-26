@@ -9,7 +9,6 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-
 steps:
 
 - task: Bash@3
@@ -30,13 +29,3 @@ steps:
       #echo 'location = "'$(ResourceGroupLocation)'"' | tee terraform.tfvars
       
       ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no azureuser@51.132.233.180 "ansible --version"
-
-      
-    name: 'RunAnsible'
-    displayName: 'Run Ansible'
-    env:
-      ARM_ENDPOINT: $(ARM_ENDPOINT)
-      ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-      ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-      ARM_TENANT_ID: $(ARM_TENANT_ID)
-      ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)    
