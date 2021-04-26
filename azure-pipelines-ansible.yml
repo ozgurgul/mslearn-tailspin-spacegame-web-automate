@@ -6,13 +6,10 @@
 trigger:
 - '*'
 
-variables:
-  buildConfiguration: 'Release'
-
 pool:
   vmImage: 'ubuntu-latest'
-variables:
-- group: Release
+
+
 steps:
 
 - task: Bash@3
@@ -30,9 +27,9 @@ steps:
         users.yml "
 
       # Write dynamic ansible.cfg.
-      echo 'location = "'$(ResourceGroupLocation)'"' | tee terraform.tfvars
+      #echo 'location = "'$(ResourceGroupLocation)'"' | tee terraform.tfvars
       
-      ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no azureuser@51.132.233.180 '
+      ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no azureuser@51.132.233.180 "ansible --version"
 
       
     name: 'RunAnsible'
