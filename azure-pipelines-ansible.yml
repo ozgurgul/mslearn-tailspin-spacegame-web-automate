@@ -18,3 +18,4 @@ steps:
       # Write your commands here
       
       echo 'Hello world'
+      ssh -i ~/terraform_rsa.pem -o StrictHostKeyChecking=no   azureuser@51.132.233.180 'which ansible'
