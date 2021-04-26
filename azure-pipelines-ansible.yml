@@ -10,14 +10,12 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: Ansible@0
+
+- task: Bash@3
   inputs:
-    ansibleInterface: 'remoteMachine'
-    connectionOverSsh: 'SSH - Ansible VM'
-    playbookSourceRemoteMachine: 'agentMachine'
-    playbookRootRemoteMachine: '$(System.DefaultWorkingDirectory)'
-    playbookPathLinkedArtifactOnRemoteMachine: 'users.yml'
-    inventoriesRemoteMachine: 'file'
-    inventoryFileSourceRemoteMachine: 'agentMachine'
-    inventoryFileLinkedArtifactOnRemoteMachine: 'azure_rm.yml'
-    args: '--private-key ~/.ssh/terraform_rsa.pem'
+    targetType: 'inline'
+    script: |
+      # Write your commands here
+      
+      echo 'Hello world'
+      ssh -i ~/.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no azureuser@51.132.233.180 'which ansible'
