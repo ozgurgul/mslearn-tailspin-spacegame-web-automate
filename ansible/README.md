@@ -1,3 +1,10 @@
+On the host virtual machine, export the service principal values to configure your Ansible credentials.
+
+export AZURE_SUBSCRIPTION_ID=<your-subscription_id>
+export AZURE_CLIENT_ID=<security-principal-appid>
+export AZURE_SECRET=<security-principal-password>
+export AZURE_TENANT=<security-principal-tenant>
+
 az vm list `
   --resource-group vocalink-rg `
   --query "[].{Name:name}" `
@@ -168,6 +175,9 @@ sudo yum update -y
 # Install Python 3 and pip.
 sudo yum install -y python3-pip
 
+# Upgrade pip3.
+sudo pip3 install --upgrade pip
+
 # Install Ansible.
 pip3 install ansible[azure]
 
@@ -182,9 +192,20 @@ sudo pip3 install -r requirements-azure.txt
 
 ```
 
+see https://docs.microsoft.com/en-us/azure/developer/ansible/install-on-linux-vm?tabs=ansible#install-ansible-on-the-virtual-machine 
+
 5. Run the following command to store your VM's public IP address in a Bash variable:
    IPADDRESS=$(az vm list-ip-addresses \
   --resource-group learn-ansible-control-machine-rg \
   --name ansiblehost \
   --query [0].virtualMachine.network.publicIpAddresses[0].ipAddress \
   --output tsv)
+
+plugin: azure.azcollection.azure_rm
+    include_vm_resource_groups:
+      - vocalink-rg
+    auth_source: auto
+    keyed_groups:
+    - prefix: tag
+    key: tags
+    plain_host_names: True
