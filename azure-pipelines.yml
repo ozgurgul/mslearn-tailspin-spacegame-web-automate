@@ -4,7 +4,7 @@
 # https://aka.ms/yaml
 
 trigger:
-- '*''
+- master
 
 pool:
   vmImage: ubuntu-latest
@@ -90,3 +90,5 @@ steps:
     runOptions: 'script'
     scriptPath: 'benchmark/perf_bench.sh'
     readyTimeout: '20000'
+
+
