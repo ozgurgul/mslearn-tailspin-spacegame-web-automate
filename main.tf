@@ -2,12 +2,12 @@
 # Azure Provider source and version being used
 terraform {
 
-   backend "azurerm" {
+  backend "azurerm" {
   }
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "=2.46.0"
+      version = ">=2.46.0"
     }
   }
 }
@@ -84,15 +84,15 @@ resource "azurerm_network_security_group" "nsg" {
   resource_group_name = azurerm_resource_group.rg.name
 
   security_rule {
-    name                        = "ssh"
-    priority                    = "100"
-    direction                   = "Inbound"
-    access                      = "Allow"
-    protocol                    = "tcp"
-    source_port_range           = "*"
-    destination_port_range      = "22"
-    source_address_prefix       = "*"
-    destination_address_prefix  = "*"
+    name                       = "ssh"
+    priority                   = "100"
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
   }
 
   tags = azurerm_resource_group.rg.tags
@@ -106,10 +106,10 @@ resource "azurerm_virtual_network" "virtual-network" {
 }
 
 resource "azurerm_subnet" "subnet1" {
-  name                            = format("%s-Subnet1", azurerm_resource_group.rg.name)
-  resource_group_name             = azurerm_resource_group.rg.name
-  virtual_network_name            = azurerm_virtual_network.virtual-network.name
-  address_prefixes                = ["10.0.2.0/24"]
+  name                 = format("%s-Subnet1", azurerm_resource_group.rg.name)
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.virtual-network.name
+  address_prefixes     = ["10.0.2.0/24"]
 }
 
 resource "azurerm_subnet_network_security_group_association" "example" {
@@ -118,24 +118,24 @@ resource "azurerm_subnet_network_security_group_association" "example" {
 }
 
 resource "azurerm_public_ip" "public-ip" {
-  count                         = var.vm_count
-  name                          = format("public-ip-%02d", count.index + 1)
-  location                      = azurerm_resource_group.rg.location
-  resource_group_name           = azurerm_resource_group.rg.name
-  allocation_method             = "Static"
+  count               = var.vm_count
+  name                = format("public-ip-%02d", count.index + 1)
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  allocation_method   = "Static"
 }
 
 resource "azurerm_network_interface" "nic" {
-  name                                  = format("%s-NIC%02d", azurerm_resource_group.rg.name, count.index + 1)
-  count                                 = var.vm_count
-  location                              = azurerm_resource_group.rg.location
-  resource_group_name                   = azurerm_resource_group.rg.name
+  name                = format("%s-NIC%02d", azurerm_resource_group.rg.name, count.index + 1)
+  count               = var.vm_count
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
 
   ip_configuration {
-    name                            = "nic-ip-config1"
-    subnet_id                       = azurerm_subnet.subnet1.id
-    private_ip_address_allocation   = "Dynamic"
-    public_ip_address_id            = element(azurerm_public_ip.public-ip.*.id, count.index)
+    name                          = "nic-ip-config1"
+    subnet_id                     = azurerm_subnet.subnet1.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = element(azurerm_public_ip.public-ip.*.id, count.index)
   }
 
   tags = azurerm_resource_group.rg.tags
@@ -146,39 +146,46 @@ resource "azurerm_network_interface" "nic" {
 # Create (and display) an SSH key
 resource "tls_private_key" "example_ssh" {
   algorithm = "RSA"
-  rsa_bits = 4096
+  rsa_bits  = 4096
 }
 
 # Since it is sensitive information and available in terraform.tfstate file in Blob Storage
-output "tls_private_key" { 
+output "tls_private_key" {
   description = "The Private key for the Linux Servers."
-  value = tls_private_key.example_ssh.private_key_pem 
+  value       = tls_private_key.example_ssh.private_key_pem
   # sensitive must be true when referencing a sensitive input variable
   sensitive = true
 }
 
-output "tls_public_key" { 
+# Save on a disk
+resource "local_file" "cloud_pem" {
+  filename = "${path.module}/terraform_rsa.pem"
+  content  = tls_private_key.example_ssh.private_key_pem
+}
+
+output "tls_public_key" {
   description = "The Public key for the Linux Servers."
-  value = tls_private_key.example_ssh.public_key_openssh 
+  value       = tls_private_key.example_ssh.public_key_openssh
 }
 
 # Create virtual machine
 resource "azurerm_linux_virtual_machine" "vm" {
-  
+
   count                 = var.vm_count
   name                  = format("vm-%02d", count.index + 1)
   location              = azurerm_resource_group.rg.location
   resource_group_name   = azurerm_resource_group.rg.name
   network_interface_ids = [element(azurerm_network_interface.nic.*.id, count.index)]
-  size               = var.vm_size
+  size                  = var.vm_size
+  custom_data           = filebase64("azure-user-data.sh")
 
   os_disk {
-    name                = format("vm-%02d-OS-Disk", count.index + 1)
-    caching             = "ReadWrite"
-    storage_account_type   = "Standard_LRS"
+    name                 = format("vm-%02d-OS-Disk", count.index + 1)
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
   }
 
-  source_image_reference  {
+  source_image_reference {
     publisher = element(split("/", var.vm_image_string), 0)
     offer     = element(split("/", var.vm_image_string), 1)
     sku       = element(split("/", var.vm_image_string), 2)
@@ -191,14 +198,14 @@ resource "azurerm_linux_virtual_machine" "vm" {
     product   = element(split("/", var.vm_image_string), 2)
   }
 
-  computer_name  = format("host-%02d", count.index + 1)
-  admin_username = var.admin_username
-  admin_password = var.admin_password
+  computer_name                   = format("host-%02d", count.index + 1)
+  admin_username                  = var.admin_username
+  admin_password                  = var.admin_password
   disable_password_authentication = false
 
   admin_ssh_key {
-      username       = var.admin_username
-      public_key     = tls_private_key.example_ssh.public_key_openssh
+    username   = var.admin_username
+    public_key = tls_private_key.example_ssh.public_key_openssh
   }
 
   # boot_diagnostics {
@@ -236,5 +243,3 @@ output "public_ip_address" {
 output "hostname" {
   value = azurerm_linux_virtual_machine.vm.*.name
 }
-
-
