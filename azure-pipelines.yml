@@ -1,106 +1,39 @@
+
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
 trigger:
-  - '*'
-  
-variables:
-  buildConfiguration: 'Release'
+- master
 
-stages:
+pool:
+  vmImage: ubuntu-latest
 
-- stage: 'Dev'
-  displayName: 'Deploy to the dev environment'
-  jobs:
-  - job: Provision
-    displayName: 'Provision Azure App Service'
-    pool:
-      vmImage: 'ubuntu-18.04'
-    variables:
-    - group: Release
-    steps:
-    - script: |
-        # Exit when any command returns a failure status.
-        set -e
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
 
-        # Write terraform.tfvars.
-        echo 'location = "'$(ResourceGroupLocation)'"' | tee terraform.tfvars
-        echo 'vm_count = "'$(VmCount)'"' | tee -a terraform.tfvars
-        echo 'vm_image_string = "'$(VmImageString)'"' | tee -a terraform.tfvars
-        echo 'vm_size = "'$(VmSize)'"' | tee -a terraform.tfvars
-        echo 'rg_name = "'$(RgName)'"' | tee -a terraform.tfvars
-        echo 'rg_tag = "'$(RgTag)'"' | tee -a terraform.tfvars
-        echo 'admin_username = "'$(AdminUsername)'"' | tee -a terraform.tfvars
-        echo 'admin_password = "'$(AdminPassword)'"' | tee -a terraform.tfvars
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
+  # Starter pipeline
+- task: SSH@0
+  inputs:
+    sshEndpoint: 'vm01srvconn'
+    runOptions: 'inline'
+    inline: |
+      sudo mkdir -p /data/benchmark
+      sudo chown -R root:root /data/benchmark
+      sudo chmod 2700 /data/benchmark
+    readyTimeout: '20000'
+- task: SSH@0
+  inputs:
+    sshEndpoint: 'vm02srvconn'
+    runOptions: 'inline'
+    inline: |
+      sudo mkdir -p /data/benchmark
+      sudo chown -R root:root /data/benchmark
+      sudo chmod 2700 /data/benchmark
+    readyTimeout: '20000'
 
-        # Write backend.tfvars. for remote terraform.tfstate on blob storage
-        echo 'resource_group_name = "'$(ResourceGroupName)'"'  | tee backend.tfvars
-        echo 'storage_account_name = "'$(StorageAccountName)'"' | tee -a backend.tfvars
-        echo 'container_name = "tfstate"' | tee -a backend.tfvars
-        echo 'key = "terraform.tfstate"' | tee -a backend.tfvars
-
-        # Initialize Terraform.
-        terraform init -input=false -backend-config="backend.tfvars"
-        
-        # Apply the Terraform plan.
-        terraform apply -input=false --auto-approve
-        
-        # Get the Analytics name for the dev environment.
-        AnalyticsHostname=$(terraform output hostname) 
-        AnalyticsAddress=$(terraform output public_ip_address) 
-        
-        # Write the AnalyticsHostname and AnalyticsAddress variables to the pipeline.
-        echo "##vso[task.setvariable variable=AnalyticsHostname;isOutput=true]$AnalyticsHostname"
-        echo "##vso[task.setvariable variable=AnalyticsAddress;isOutput=true]$AnalyticsAddress"
-        
-        # Apply the Terraform destroy.
-        # terraform destroy -input=false -auto-approve
-
-      name: 'RunTerraform'
-      displayName: 'Run Terraform'
-      env:
-        ARM_ENDPOINT: $(ARM_ENDPOINT)
-        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-        ARM_TENANT_ID: $(ARM_TENANT_ID)
-        ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-  - deployment: deploy
-    dependsOn: Provision
-    variables:
-      # map the output variable from A into this job
-      AnalyticsHostname: $[ dependencies.Provision.outputs['RunTerraform.AnalyticsHostname'] ]
-      AnalyticsAddress: $[ dependencies.Provision.outputs['RunTerraform.AnalyticsAddress'] ]
-    pool:
-      vmImage: 'ubuntu-18.04'
-    environment: dev
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - script: echo $(AnalyticsAddress) # this step uses the mapped-in variable
-            name: echovar
-          - script: |
-              echo "##vso[task.setvariable variable=AnalyticsAddress;]$(AnalyticsAddress)"
-            displayName: 'Run a one-line script'
-          - script: |
-              echo $(AnalyticsAddress) 
-            displayName: '=== DEBUG LINE ==='
-          
-          # - task: DownloadSecureFile@1
-          #   name: 'id_rsa'
-          #   displayName: 'Download id_rsa.pub'
-          #   inputs:
-          #     secureFile: 'id_rsa.pub'
-          
-          # - script: |
-          #     echo Installing the .ssh directory...
-          #     sudo chown root:root $(caCertificate.secureFilePath)
-          #     sudo chmod a+r $(caCertificate.secureFilePath)
-          #     sudo ln -s -t /etc/ssl/certs/ $(caCertificate.secureFilePath)
-
-          # - task: InstallSSHKey@0
-          #   displayName: 'Install an SSH key'
-          #   inputs:
-          #     knownHostsEntry: 'SHA256:1Hyrss55tsxGifESBMc0s+2NtutnR/4+LOkVwrOGrIp8U johndoe@contoso'
-          #     sshPublicKey: '$(myPubKey)'
-          #     sshKeySecureFile: 'id_rsa'
-        
-
-       
