@@ -36,7 +36,9 @@ steps:
     script: |
       # Write your commands here
       
-      echo 'Hello world'
+      # Pem file is too open
+      chmod 0600 ./.ssh/terraform_rsa.pem
+      
       ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 'which ansible'
     
 
