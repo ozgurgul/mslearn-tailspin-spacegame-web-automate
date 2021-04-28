@@ -28,59 +28,56 @@ steps:
       sudo chown -R root:root /data/benchmark
       sudo chmod 2700 /data/benchmark
     readyTimeout: '20000'
-- task: CopyFilesOverSSH@0
-  inputs:
-    sshEndpoint: 'vm01srvconn'
-    sourceFolder: 'benchmark'
-    contents: '**'
-    targetFolder: '/data/benchmark'
-    readyTimeout: '20000'
-- task: CopyFilesOverSSH@0
-  inputs:
-    sshEndpoint: 'vm02srvconn'
-    sourceFolder: 'benchmark'
-    contents: '**'
-    targetFolder: '/data/benchmark'
-    readyTimeout: '20000'
-- task: SSH@0
-  inputs:
-    sshEndpoint: 'vm01srvconn'
-    runOptions: 'inline'
-    inline: |
-      sudo chown -R root:root /data/benchmark/
-      sudo chmod -R 2700 /data/benchmark/
-      sudo chmod -R 700 /data/benchmark/
-    readyTimeout: '20000'
-- task: SSH@0
-  inputs:
-    sshEndpoint: 'vm02srvconn'
-    runOptions: 'inline'
-    inline: |
-      sudo chown -R root:root /data/benchmark/
-      sudo chmod -R 2700 /data/benchmark/
-      sudo chmod -R 700 /data/benchmark/
-    readyTimeout: '20000'
-- task: SSH@0
-  inputs:
-    sshEndpoint: 'vm02srvconn'
-    runOptions: 'inline'
-    inline: |
-      sudo chown -R root:root /data/benchmark/
-      sudo chmod -R 2700 /data/benchmark/
-      sudo chmod -R 700 /data/benchmark/
-    readyTimeout: '20000'
-- task: SSH@0
-  inputs:
-    sshEndpoint: 'vm02srvconn'
-    runOptions: 'commands'
-    commands: 'sudo iperf3 -s -p 8010 2>&1'
-    readyTimeout: '20000'
 
-- task: SSH@0
+# CopyFilesOverSSH
+- task: Bash@3
   inputs:
-    sshEndpoint: 'vm01srvconn'
-    runOptions: 'script'
-    scriptPath: 'benchmark/perf_bench.sh'
-    readyTimeout: '20000'
+    targetType: 'inline'
+    script: |
+      # Write your commands here
+      
+      echo 'Hello world'
+    workingDirectory: '/data/benchmark'
+
+# - task: SSH@0
+#   inputs:
+#     sshEndpoint: 'vm01srvconn'
+#     runOptions: 'inline'
+#     inline: |
+#       sudo chown -R root:root /data/benchmark/
+#       sudo chmod -R 2700 /data/benchmark/
+#       sudo chmod -R 700 /data/benchmark/
+#     readyTimeout: '20000'
+# - task: SSH@0
+#   inputs:
+#     sshEndpoint: 'vm02srvconn'
+#     runOptions: 'inline'
+#     inline: |
+#       sudo chown -R root:root /data/benchmark/
+#       sudo chmod -R 2700 /data/benchmark/
+#       sudo chmod -R 700 /data/benchmark/
+#     readyTimeout: '20000'
+# - task: SSH@0
+#   inputs:
+#     sshEndpoint: 'vm02srvconn'
+#     runOptions: 'inline'
+#     inline: |
+#       sudo chown -R root:root /data/benchmark/
+#       sudo chmod -R 2700 /data/benchmark/
+#       sudo chmod -R 700 /data/benchmark/
+#     readyTimeout: '20000'
+# - task: SSH@0
+#   inputs:
+#     sshEndpoint: 'vm02srvconn'
+#     runOptions: 'commands'
+#     commands: 'sudo iperf3 -s -p 8010 2>&1'
+#     readyTimeout: '20000'
+
+# - task: SSH@0
+#   inputs:
+#     sshEndpoint: 'vm01srvconn'
+#     runOptions: 'script'
+#     scriptPath: 'benchmark/perf_bench.sh'
+#     readyTimeout: '20000'
 
 
