@@ -30,8 +30,7 @@ stages:
         echo 'admin_username = "'$(AdminUsername)'"' | tee -a terraform.tfvars
         echo 'admin_password = "'$(AdminPassword)'"' | tee -a terraform.tfvars
 
-
-        # Write backend.tfvars.
+        # Write backend.tfvars. for remote terraform.tfstate on blob storage
         echo 'resource_group_name = "'$(ResourceGroupName)'"'  | tee backend.tfvars
         echo 'storage_account_name = "'$(StorageAccountName)'"' | tee -a backend.tfvars
         echo 'container_name = "tfstate"' | tee -a backend.tfvars

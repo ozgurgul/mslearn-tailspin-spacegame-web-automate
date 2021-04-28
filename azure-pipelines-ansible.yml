@@ -10,9 +10,33 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+# Download secure file
+# Download a secure file to the agent machine
+  - task: DownloadSecureFile@1
+  name: pemCertificate
+  displayName: 'Download PEM certificate'
+  inputs:
+    secureFile: 'terraform_rsa.pem'
 
+- script: |
+    echo Installing $(pemCertificate.secureFilePath) to the trusted CA directory...
+    sudo chown root:root $(pemCertificate.secureFilePath)
+    sudo chmod a+r $(pemCertificate.secureFilePath) 
+    sudo ln -s -t /etc/ssl/certs/ $(pemCertificate.secureFilePath)
+
+# Batch script
+# Run a batch script and allow it to collect performance benchmark in the environment
 - task: Bash@3
   inputs:
+    #targetType: 'filePath' # Optional. Options: filePath, inline
+    #filePath: # Required when targetType == FilePath
+    #arguments: # Optional
+    #script: '# echo Hello world' # Required when targetType == inline
+    #workingDirectory: # Optional
+    #failOnStderr: false # Optional
+    #noProfile: true # Optional
+    #noRc: true # Optional
+
     targetType: 'inline'
     script: |
       # Write your commands here
