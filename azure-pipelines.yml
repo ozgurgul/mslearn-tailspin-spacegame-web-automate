@@ -10,6 +10,7 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+# Prepare the directory structure on VM-01  
 - task: SSH@0
   inputs:
     sshEndpoint: 'vm01srvconn'
@@ -19,6 +20,7 @@ steps:
       sudo chown -R root:root /data/benchmark
       sudo chmod 2700 /data/benchmark
     readyTimeout: '20000'
+# Prepare the directory structure on VM-02    
 - task: SSH@0
   inputs:
     sshEndpoint: 'vm02srvconn'
@@ -28,7 +30,6 @@ steps:
       sudo chown -R root:root /data/benchmark
       sudo chmod 2700 /data/benchmark
     readyTimeout: '20000'
-
 # CopyFilesOverSSH
 - task: Bash@3
   inputs:
@@ -44,10 +45,12 @@ steps:
       ## ssh -v -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "date"
       ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "date"
       
-      ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "date \
-      ls -lR /data/
-      echo 'beautiful day'
-      "
+      # copy using ssh keys from agent to target machine
+      scp -i ./.ssh/terraform_rsa.pem ./benchmark/*  testadmin@51.132.25.102:/data/benchmark/
+
+
+      # List the content 
+      ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "ls -l /data/benchmark"
 
 
 # - task: SSH@0
