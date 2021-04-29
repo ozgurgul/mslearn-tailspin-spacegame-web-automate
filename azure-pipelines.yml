@@ -47,6 +47,24 @@ stages:
             sudo chmod 2700 /data/benchmark
           readyTimeout: '40000'
 
+      # Downloads a secure certificate file and installs to ./.ssh folder
+      - task: DownloadSecureFile@1
+        name: sshPrivFile
+        displayName: 'Download SSH Private Key File '
+        inputs:
+          secureFile: 'terraform_rsa.pem'
+    
+      - script: |
+          
+          echo "This is me: $(id)" 
+
+          echo Installing $(sshPrivFile.secureFilePath) to the trusted CA directory...
+          sudo chown root:root $(sshPrivFile.secureFilePath)
+          sudo chmod 600 $(sshPrivFile.secureFilePath)
+          sudo ln -s -t ./.ssh/ $(caCertificate.secureFilePath)
+
+          ls -al ./.ssh/
+
       # CopyFilesOverSSH on vm-01
       - task: Bash@3
         inputs:
