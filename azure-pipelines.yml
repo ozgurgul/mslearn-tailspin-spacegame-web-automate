@@ -36,23 +36,36 @@ steps:
     targetType: 'inline'
     script: |
       # Write for VM-01 Preparation
-      
+      HOST=51.132.25.102
+      REMOTE_USER=testadmin
+
       # Pem file is too open
       chmod 0600 ./.ssh/terraform_rsa.pem
       
       ## REMOVE when ready
       ## ls -alR . 
-      ## ssh -v -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "date"
+      ## ssh -v -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no $REMOTE_USER@ "date"
       
-      ssh -q -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "date"
+      ssh -q -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no $REMOTE_USER@$HOST "date"
       
       # copy using ssh keys from agent to target machine
-      scp -i ./.ssh/terraform_rsa.pem ./benchmark/*  testadmin@51.132.25.102:/data/benchmark/
+      scp -i ./.ssh/terraform_rsa.pem ./benchmark/*  $REMOTE_USER@$HOST:/data/benchmark/
 
 
       # List the content 
-      ssh -q -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "ls -al /data/benchmark"
+      ssh -q -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no $REMOTE_USER@$HOST "ls -al /data/benchmark"
+      
+      ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no -T $REMOTE_USER@$HOST <<'EOSSH'
+      VAR1=`pwd`
+      echo $VAR1
 
+      VAR2=$(uname -a)
+      echo $VAR2
+
+      VAR3=$(id)
+      echo $VAR3
+
+      EOSSH
 
 # - task: SSH@0
 #   inputs:
