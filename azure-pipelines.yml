@@ -49,13 +49,13 @@ steps:
       ssh -q -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no $REMOTE_USER@$HOST "date"
       
       # copy using ssh keys from agent to target machine
-      scp -i ./.ssh/terraform_rsa.pem ./benchmark/*  $REMOTE_USER@$HOST:/data/benchmark/
+      scp -q -i ./.ssh/terraform_rsa.pem ./benchmark/  $REMOTE_USER@$HOST:/data/benchmark/
 
 
       # List the content 
       ssh -q -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no $REMOTE_USER@$HOST "ls -al /data/benchmark"
       
-      ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no -T $REMOTE_USER@$HOST <<'EOSSH'
+      ssh -q -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no -T $REMOTE_USER@$HOST <<'EOSSH'
       VAR1=`pwd`
       echo $VAR1
 
