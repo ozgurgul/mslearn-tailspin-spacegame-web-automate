@@ -6,159 +6,171 @@
 trigger:
 - '*'
 
-pool:
-  vmImage: ubuntu-latest
+variables:
+  buildConfiguration: 'EnvSource'
 
-steps:
-# Prepare the directory structure on VM-01  
-- task: SSH@0
-  inputs:
-    sshEndpoint: 'vm01srvconn'
-    runOptions: 'inline'
-    inline: |
-      sudo mkdir -p /data/benchmark
-      sudo chown -R $REMOTE_USER:$REMOTE_USER /data/benchmark
-      sudo chmod 2700 /data/benchmark
-    readyTimeout: '20000'
-  env:
-    REMOTE_USER: $(remoteUser)  
-# Prepare the directory structure on VM-02    
-- task: SSH@0
-  inputs:
-    sshEndpoint: 'vm02srvconn'
-    runOptions: 'inline'
-    inline: |
-      sudo mkdir -p /data/benchmark
-      sudo chown -R $REMOTE_USER:$REMOTE_USER /data/benchmark
-      sudo chmod 2700 /data/benchmark
-    readyTimeout: '20000'
-  env:
-    REMOTE_USER: $(remoteUser)  
-
-# CopyFilesOverSSH on vm-01
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Write for VM-01 Preparation
+stages:
+  - stage: 'Dev'
+    displayName: 'Deploy to the dev environment'
+    jobs:
+    - job: Provision
+      displayName: 'Provision Azure App Service'
+      pool:
+        vmImage: 'ubuntu-18.04'
       
-      echo "FIO_SIZE              = $FIO_SIZE              | tee ./benchmark/.env 
-      echo "FIO_OFFSET_INCREMENT  = $FIO_OFFSET_INCREMENT  | tee -a ./benchmark/.env 
-      echo "FIO_DIRECT            = $FIO_DIRECT            | tee -a ./benchmark/.env
-      echo "FIO_BENCH_QUICK       = $FIO_BENCH_QUICK       | tee -a ./benchmark/.env
-      echo "RUN_IPERF             = $RUN_IPERF             | tee -a ./benchmark/.env
-      echo "IPERF_REMOTE_SERVER   = $IPERF_REMOTE_SERVER   | tee -a ./benchmark/.env
-      echo "IPERF_PORT            = $IPERF_PORT            | tee -a ./benchmark/.env
-      echo "RUN_HOUSEKEEPING      = $RUN_HOUSEKEEPING      | tee -a ./benchmark/.env 
-      
-      SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
+      variables:
+      - group: EnvSource
 
-      echo "Secret File Resides here.. $SSH_KEY_FILE"
+      steps:
+      # Prepare the directory structure on VM-01  
+      - task: SSH@0
+        inputs:
+          sshEndpoint: 'vm01srvconn'
+          runOptions: 'inline'
+          inline: |
+            sudo mkdir -p /data/benchmark
+            sudo chown -R $REMOTE_USER:$REMOTE_USER /data/benchmark
+            sudo chmod 2700 /data/benchmark
+          readyTimeout: '20000'
+        env:
+          REMOTE_USER: $(remoteUser)  
+      # Prepare the directory structure on VM-02    
+      - task: SSH@0
+        inputs:
+          sshEndpoint: 'vm02srvconn'
+          runOptions: 'inline'
+          inline: |
+            sudo mkdir -p /data/benchmark
+            sudo chown -R $REMOTE_USER:$REMOTE_USER /data/benchmark
+            sudo chmod 2700 /data/benchmark
+          readyTimeout: '20000'
+        env:
+          REMOTE_USER: $(remoteUser)  
 
-      cat $SSH_KEY_FILE
+      # CopyFilesOverSSH on vm-01
+      - task: Bash@3
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Write for VM-01 Preparation
+            
+            echo "FIO_SIZE              = $FIO_SIZE              | tee ./benchmark/.env 
+            echo "FIO_OFFSET_INCREMENT  = $FIO_OFFSET_INCREMENT  | tee -a ./benchmark/.env 
+            echo "FIO_DIRECT            = $FIO_DIRECT            | tee -a ./benchmark/.env
+            echo "FIO_BENCH_QUICK       = $FIO_BENCH_QUICK       | tee -a ./benchmark/.env
+            echo "RUN_IPERF             = $RUN_IPERF             | tee -a ./benchmark/.env
+            echo "IPERF_REMOTE_SERVER   = $IPERF_REMOTE_SERVER   | tee -a ./benchmark/.env
+            echo "IPERF_PORT            = $IPERF_PORT            | tee -a ./benchmark/.env
+            echo "RUN_HOUSEKEEPING      = $RUN_HOUSEKEEPING      | tee -a ./benchmark/.env 
+            
+            SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
 
-      # Pem file is too open
-      chmod 0600 $SSH_KEY_FILE
-      
-      ## REMOVE when ready
-      ls -al ./benchmark/ 
-    
-      ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
-      
-      # copy using ssh keys from agent to target machine
-      # to see the transfer progress
-      # ... -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/ ...
-      rsync -q -av -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/  $REMOTE_USER@$TARGET_SERVER:/data/benchmark/
+            echo "Secret File Resides here.. $SSH_KEY_FILE"
 
-      ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
-      
-      # Change Permissions
-      sudo chown -R root:root /data/benchmark/
-      sudo chmod -R 2700 /data/benchmark/
-      sudo chmod -R 700 /data/benchmark/
-      
-      # List the content 
-      VAR1=`ls -al /data/benchmark`
-      echo "$VAR1"
+            cat $SSH_KEY_FILE
 
-      EOSSH
-  env:
-    SSH_KEY_FILE: "./.ssh/terraform_rsa.pem"
-    TARGET_SERVER: $(tgtServer01)
-    REMOTE_USER: $(remoteUser)
-    FIO_SIZE: $(fioSize)
-    FIO_OFFSET_INCREMENT : $(fioOffsetIncrement)
-    FIO_DIRECT: $(fioDirect)
-    FIO_BENCH_QUICK : $(fioBenchQuick)
-    RUN_IPERF : $(runIperf)
-    IPERF_REMOTE_SERVER : $(iperfRemoteServer02)
-    IPERF_PORT: $(iperfPort)
+            # Pem file is too open
+            chmod 0600 $SSH_KEY_FILE
+            
+            ## REMOVE when ready
+            ls -al ./benchmark/ 
+          
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
+            
+            # copy using ssh keys from agent to target machine
+            # to see the transfer progress
+            # ... -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/ ...
+            rsync -q -av -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/  $REMOTE_USER@$TARGET_SERVER:/data/benchmark/
 
-# CopyFilesOverSSH on vm-02
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: |
-      # Write for VM-02 Preparation
-      
-      echo "FIO_SIZE              = $FIO_SIZE              | tee ./benchmark/.env 
-      echo "FIO_OFFSET_INCREMENT  = $FIO_OFFSET_INCREMENT  | tee -a ./benchmark/.env 
-      echo "FIO_DIRECT            = $FIO_DIRECT            | tee -a ./benchmark/.env
-      echo "FIO_BENCH_QUICK       = $FIO_BENCH_QUICK       | tee -a ./benchmark/.env
-      echo "RUN_IPERF             = $RUN_IPERF             | tee -a ./benchmark/.env
-      echo "IPERF_REMOTE_SERVER   = $IPERF_REMOTE_SERVER   | tee -a ./benchmark/.env
-      echo "IPERF_PORT            = $IPERF_PORT            | tee -a ./benchmark/.env
-      echo "RUN_HOUSEKEEPING      = $RUN_HOUSEKEEPING      | tee -a ./benchmark/.env 
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+            
+            # Change Permissions
+            sudo chown -R root:root /data/benchmark/
+            sudo chmod -R 2700 /data/benchmark/
+            sudo chmod -R 700 /data/benchmark/
+            
+            # List the content 
+            VAR1=`ls -al /data/benchmark`
+            echo "$VAR1"
 
-      # Pem file is too open
-      chmod 0600 $SSH_KEY_FILE
-      
-      ## REMOVE when ready
-      ls -al ./benchmark/ 
-    
-      ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
-      
-      # copy using ssh keys from agent to target machine
-      # to see the transfer progress
-      # ... -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/ ...
-      rsync -q -av -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/  $REMOTE_USER@$TARGET_SERVER:/data/benchmark/
+            EOSSH
+        env:
+          SSH_KEYFILE: "./.ssh/terraform_rsa.pem"
+          TARGET_SERVER: $(tgtServer01)
+          REMOTE_USER: $(remoteUser)
+          FIO_SIZE: $(fioSize)
+          FIO_OFFSET_INCREMENT : $(fioOffsetIncrement)
+          FIO_DIRECT: $(fioDirect)
+          FIO_BENCH_QUICK : $(fioBenchQuick)
+          RUN_IPERF : $(runIperf)
+          IPERF_REMOTE_SERVER : $(iperfRemoteServer02)
+          IPERF_PORT: $(iperfPort)
 
-      ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
-      
-      # Change Permissions
-      sudo chown -R root:root /data/benchmark/
-      sudo chmod -R 2700 /data/benchmark/
-      sudo chmod -R 700 /data/benchmark/
-      
-      # List the content 
-      VAR1=`ls -al /data/benchmark`
-      echo "$VAR1"
+      # CopyFilesOverSSH on vm-02
+      - task: Bash@3
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Write for VM-02 Preparation
+            
+            echo "FIO_SIZE              = $FIO_SIZE              | tee ./benchmark/.env 
+            echo "FIO_OFFSET_INCREMENT  = $FIO_OFFSET_INCREMENT  | tee -a ./benchmark/.env 
+            echo "FIO_DIRECT            = $FIO_DIRECT            | tee -a ./benchmark/.env
+            echo "FIO_BENCH_QUICK       = $FIO_BENCH_QUICK       | tee -a ./benchmark/.env
+            echo "RUN_IPERF             = $RUN_IPERF             | tee -a ./benchmark/.env
+            echo "IPERF_REMOTE_SERVER   = $IPERF_REMOTE_SERVER   | tee -a ./benchmark/.env
+            echo "IPERF_PORT            = $IPERF_PORT            | tee -a ./benchmark/.env
+            echo "RUN_HOUSEKEEPING      = $RUN_HOUSEKEEPING      | tee -a ./benchmark/.env 
 
-      EOSSH
-  env:
-    SSH_KEY_FILE: "./.ssh/terraform_rsa.pem"
-    TARGET_SERVER: $(tgtServer02)
-    REMOTE_USER: $(remoteUser)
-    FIO_SIZE: $(fioSize)
-    FIO_OFFSET_INCREMENT : $(fioOffsetIncrement)
-    FIO_DIRECT: $(fioDirect)
-    FIO_BENCH_QUICK : $(fioBenchQuick)
-    RUN_IPERF : $(runIperf)
-    IPERF_REMOTE_SERVER : $(iperfRemoteServer01)
-    IPERF_PORT: $(iperfPort)
+            # Pem file is too open
+            chmod 0600 $SSH_KEY_FILE
+            
+            ## REMOVE when ready
+            ls -al ./benchmark/ 
+          
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
+            
+            # copy using ssh keys from agent to target machine
+            # to see the transfer progress
+            # ... -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/ ...
+            rsync -q -av -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/  $REMOTE_USER@$TARGET_SERVER:/data/benchmark/
 
-- task: SSH@0
-  inputs:
-    sshEndpoint: 'vm02srvconn'
-    runOptions: 'commands'
-    commands: 'sudo iperf3 -s -p 8010 2>&1 &'
-    readyTimeout: '20000'
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+            
+            # Change Permissions
+            sudo chown -R root:root /data/benchmark/
+            sudo chmod -R 2700 /data/benchmark/
+            sudo chmod -R 700 /data/benchmark/
+            
+            # List the content 
+            VAR1=`ls -al /data/benchmark`
+            echo "$VAR1"
 
-# - task: SSH@0
-#   inputs:
-#     sshEndpoint: 'vm01srvconn'
-#     runOptions: 'script'
-#     scriptPath: 'benchmark/perf_bench.sh'
-#     readyTimeout: '20000'
+            EOSSH
+        env:
+          SSH_KEYFILE: "./.ssh/terraform_rsa.pem"
+          TARGET_SERVER: $(tgtServer02)
+          REMOTE_USER: $(remoteUser)
+          FIO_SIZE: $(fioSize)
+          FIO_OFFSET_INCREMENT : $(fioOffsetIncrement)
+          FIO_DIRECT: $(fioDirect)
+          FIO_BENCH_QUICK : $(fioBenchQuick)
+          RUN_IPERF : $(runIperf)
+          IPERF_REMOTE_SERVER : $(iperfRemoteServer01)
+          IPERF_PORT: $(iperfPort)
+
+      - task: SSH@0
+        inputs:
+          sshEndpoint: 'vm02srvconn'
+          runOptions: 'commands'
+          commands: 'sudo iperf3 -s -p 8010 2>&1 &'
+          readyTimeout: '20000'
+
+      # - task: SSH@0
+      #   inputs:
+      #     sshEndpoint: 'vm01srvconn'
+      #     runOptions: 'script'
+      #     scriptPath: 'benchmark/perf_bench.sh'
+      #     readyTimeout: '20000'
 
 
