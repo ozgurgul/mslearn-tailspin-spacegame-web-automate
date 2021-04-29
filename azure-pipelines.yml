@@ -24,6 +24,7 @@ stages:
       steps:
       # Prepare the directory structure on VM-01  
       - task: SSH@0
+        displayName: 'Prepare the directory structure on VM-01' 
         inputs:
           sshEndpoint: 'vm01SrvConn'
           runOptions: 'inline'
@@ -38,6 +39,7 @@ stages:
 
       # Prepare the directory structure on VM-02    
       - task: SSH@0
+        displayName: 'Prepare the directory structure on VM-02'
         inputs:
           sshEndpoint: 'vm02SrvConn'
           runOptions: 'inline'
@@ -60,7 +62,7 @@ stages:
         inputs:
           targetType: 'inline'
           script: |
-              
+              # Move the pem file
               echo "This is me: $(id)" 
 
               echo "Soft linking $(sshPrivFile.secureFilePath) to the ./.ssh directory..."
