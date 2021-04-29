@@ -1,10 +1,10 @@
-
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# Performance Benchmarking Script on Centos
+# Author: Ozgur Gul (HPE)
+# Date: 2021/04/29
+# Version: 0.1 (Alpha)
 
 trigger:
-- master
+- '*'
 
 pool:
   vmImage: ubuntu-latest
@@ -17,7 +17,7 @@ steps:
     runOptions: 'inline'
     inline: |
       sudo mkdir -p /data/benchmark
-      sudo chown -R root:root /data/benchmark
+      sudo chown -R testadmin:testadmin /data/benchmark
       sudo chmod 2700 /data/benchmark
     readyTimeout: '20000'
 # Prepare the directory structure on VM-02    
@@ -27,7 +27,7 @@ steps:
     runOptions: 'inline'
     inline: |
       sudo mkdir -p /data/benchmark
-      sudo chown -R root:root /data/benchmark
+      sudo chown -R testadmin:testadmin /data/benchmark
       sudo chmod 2700 /data/benchmark
     readyTimeout: '20000'
 # CopyFilesOverSSH
