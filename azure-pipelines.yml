@@ -6,6 +6,8 @@
 trigger:
 - '*'
 
+pr: none
+
 variables:
   buildConfiguration: 'EnvSource'
 
@@ -35,7 +37,7 @@ stages:
             sudo mkdir -p /data/benchmark
             sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
             sudo chmod 2700 /data/benchmark
-          readyTimeout: '20000'
+          readyTimeout: '40000'
 
       # Prepare the directory structure on VM-02    
       - task: SSH@0
