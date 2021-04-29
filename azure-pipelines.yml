@@ -25,25 +25,25 @@ stages:
       # Prepare the directory structure on VM-01  
       - task: SSH@0
         inputs:
-          sshEndpoint: 'vm01srvconn'
+          sshEndpoint: 'vm01SrvConn'
           runOptions: 'inline'
           inline: |
             sudo mkdir -p /data/benchmark
             sudo chown -R $REMOTE_USER:$REMOTE_USER /data/benchmark
             sudo chmod 2700 /data/benchmark
-          readyTimeout: '20000'
+          readyTimeout: '40000'
         env:
           REMOTE_USER: $(remoteUser)  
       # Prepare the directory structure on VM-02    
       - task: SSH@0
         inputs:
-          sshEndpoint: 'vm02srvconn'
+          sshEndpoint: 'vm02SrvConn'
           runOptions: 'inline'
           inline: |
             sudo mkdir -p /data/benchmark
             sudo chown -R $REMOTE_USER:$REMOTE_USER /data/benchmark
             sudo chmod 2700 /data/benchmark
-          readyTimeout: '20000'
+          readyTimeout: '40000'
         env:
           REMOTE_USER: $(remoteUser)  
 
@@ -161,7 +161,7 @@ stages:
 
       - task: SSH@0
         inputs:
-          sshEndpoint: 'vm02srvconn'
+          sshEndpoint: 'vm02SrvConn'
           runOptions: 'commands'
           commands: 'sudo iperf3 -s -p 8010 2>&1 &'
           readyTimeout: '20000'
