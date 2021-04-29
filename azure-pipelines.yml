@@ -48,8 +48,8 @@ steps:
       ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$HOST "date"
       
       # copy using ssh keys from agent to target machine
-      scp -q -i $SSH_KEY_FILE ./benchmark/.  $REMOTE_USER@$HOST:/data/benchmark/
-
+      # scp -q -i $SSH_KEY_FILE ./benchmark/  $REMOTE_USER@$HOST:/data/benchmark/
+      rsync -av -s 'ssh -i $SSH_KEY_FILE' --progress ./benchmark/  $REMOTE_USER@$HOST:/data/benchmark/
 
       # List the content 
       ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$HOST "ls -al /data/benchmark"
