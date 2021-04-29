@@ -54,23 +54,25 @@ stages:
         inputs:
           secureFile: 'terraform_rsa.pem'
  
-      # CopyFilesOverSSH on vm-01
+      # Soft linking 
       - task: Bash@3
+        displayName: 'Soft linking the priv key file'
         inputs:
           targetType: 'inline'
           script: |
               
               echo "This is me: $(id)" 
 
-              echo Installing $(sshPrivFile.secureFilePath) to the trusted CA directory...
+              echo "Soft linking $(sshPrivFile.secureFilePath) to the ./.ssh directory..."
               sudo chown root:root $(sshPrivFile.secureFilePath)
               sudo chmod 600 $(sshPrivFile.secureFilePath)
-              sudo ln -s -t ./.ssh/ $(caCertificate.secureFilePath)
+              sudo ln -s -t ./.ssh/ $(sshPrivFile.secureFilePath)
 
               ls -al ./.ssh/
 
       # CopyFilesOverSSH on vm-01
       - task: Bash@3
+        displayName: 'CopyFilesOverSSH on vm-01'
         inputs:
           targetType: 'inline'
           script: |
@@ -117,6 +119,7 @@ stages:
 
       # CopyFilesOverSSH on vm-02
       - task: Bash@3
+        displayName: 'CopyFilesOverSSH on vm-02'
         inputs:
           targetType: 'inline'
           script: |
@@ -163,6 +166,7 @@ stages:
           
 
       - task: SSH@0
+        displayName: 'Start the iperf on vm-02 at the background'
         inputs:
           sshEndpoint: 'vm02SrvConn'
           runOptions: 'commands'
