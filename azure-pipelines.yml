@@ -29,11 +29,10 @@ stages:
           runOptions: 'inline'
           inline: |
             sudo mkdir -p /data/benchmark
-            sudo chown -R $REMOTE_USER:$REMOTE_USER /data/benchmark
+            sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
             sudo chmod 2700 /data/benchmark
           readyTimeout: '40000'
-        env:
-          REMOTE_USER: $(remoteUser)  
+
       # Prepare the directory structure on VM-02    
       - task: SSH@0
         inputs:
@@ -41,11 +40,9 @@ stages:
           runOptions: 'inline'
           inline: |
             sudo mkdir -p /data/benchmark
-            sudo chown -R $REMOTE_USER:$REMOTE_USER /data/benchmark
+            sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
             sudo chmod 2700 /data/benchmark
           readyTimeout: '40000'
-        env:
-          REMOTE_USER: $(remoteUser)  
 
       # CopyFilesOverSSH on vm-01
       - task: Bash@3
