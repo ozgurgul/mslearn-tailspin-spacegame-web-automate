@@ -37,38 +37,45 @@ steps:
     script: |
       # Write for VM-01 Preparation
       
+      echo "FIO_SIZE              = $FIO_SIZE              | tee ./benchmark/.env 
+      echo "FIO_OFFSET_INCREMENT  = $FIO_OFFSET_INCREMENT  | tee -a ./benchmark/.env 
+      echo "FIO_DIRECT            = $FIO_DIRECT            | tee -a ./benchmark/.env
+      echo "FIO_BENCH_QUICK       = $FIO_BENCH_QUICK       | tee -a ./benchmark/.env
+      echo "RUN_IPERF             = $RUN_IPERF             | tee -a ./benchmark/.env
+      echo "IPERF_REMOTE_SERVER   = $IPERF_REMOTE_SERVER   | tee -a ./benchmark/.env
+      echo "IPERF_PORT            = $IPERF_PORT            | tee -a ./benchmark/.env
+      echo "RUN_HOUSEKEEPING      = $RUN_HOUSEKEEPING      | tee -a ./benchmark/.env 
 
       # Pem file is too open
       chmod 0600 $SSH_KEY_FILE
       
       ## REMOVE when ready
       ls -al ./benchmark/ 
-      ## ssh -v -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@ "date"
-      
+    
       ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$HOST "date"
       
       # copy using ssh keys from agent to target machine
-      # scp -q -i $SSH_KEY_FILE ./benchmark/  $REMOTE_USER@$HOST:/data/benchmark/
-      rsync -av -s 'ssh -i $SSH_KEY_FILE' --progress ./benchmark/  $REMOTE_USER@$HOST:/data/benchmark/
+      rsync -av -e "ssh -i $SSH_KEY_FILE" --progress ./benchmark/  $REMOTE_USER@$HOST:/data/benchmark/
 
-      # List the content 
-      ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$HOST "ls -al /data/benchmark"
-      
       ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$HOST <<'EOSSH'
-      VAR1=`pwd`
+      
+      # List the content 
+      VAR1=`ls -al /data/benchmark`
       echo $VAR1
-
-      VAR2=$(uname -a)
-      echo $VAR2
-
-      VAR3=$(id)
-      echo $VAR3
 
       EOSSH
   env:
     SSH_KEY_FILE: "./.ssh/terraform_rsa.pem"
     HOST: "51.132.25.102"
-    REMOTE_USER: "testadmin" 
+    REMOTE_USER: "testadmin"
+    FIO_SIZE: "2G"
+    FIO_OFFSET_INCREMENT : "500M"
+    FIO_DIRECT: "1"
+    FIO_BENCH_QUICK : "no"
+    RUN_IPERF : "Y"
+    IPERF_REMOTE_SERVER : "10.0.2.5"
+    IPERF_PORT: "8010"
+    RUN_HOUSEKEEPING : "Y"  
 
 # - task: SSH@0
 #   inputs:
