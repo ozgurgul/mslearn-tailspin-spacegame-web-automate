@@ -65,13 +65,10 @@ stages:
               # Move the pem file
               echo "This is me: $(id)" 
 
-              echo "Soft linking $(sshPrivFile.secureFilePath) to the ./.ssh directory..."
-              sudo chown root:root $(sshPrivFile.secureFilePath)
-              sudo chmod 600 $(sshPrivFile.secureFilePath)
-              sudo ln -s -t ./.ssh/ $(sshPrivFile.secureFilePath)
-
-              ls -al ./.ssh/
-
+              echo "Copying $(sshPrivFile.secureFilePath) to the Temp directory..."
+              sudo cp $(sshPrivFile.secureFilePath) $(Agent.TempDirectory)
+              sudo chmod 600 $(Agent.TempDirectory)/terraform_rsa.pem
+              
       # CopyFilesOverSSH on vm-01
       - task: Bash@3
         displayName: 'CopyFilesOverSSH on vm-01'
@@ -117,7 +114,7 @@ stages:
 
             EOSSH
         env:
-          SSH_KEYFILE: "./.ssh/terraform_rsa.pem"
+          SSH_KEY_FILE: "./.ssh/terraform_rsa.pem"
 
       # CopyFilesOverSSH on vm-02
       - task: Bash@3
