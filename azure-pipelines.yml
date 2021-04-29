@@ -17,9 +17,11 @@ steps:
     runOptions: 'inline'
     inline: |
       sudo mkdir -p /data/benchmark
-      sudo chown -R testadmin:testadmin /data/benchmark
+      sudo chown -R $REMOTE_USER:$REMOTE_USER /data/benchmark
       sudo chmod 2700 /data/benchmark
     readyTimeout: '20000'
+  env:
+    REMOTE_USER: $(remoteUser)  
 # Prepare the directory structure on VM-02    
 - task: SSH@0
   inputs:
@@ -27,15 +29,77 @@ steps:
     runOptions: 'inline'
     inline: |
       sudo mkdir -p /data/benchmark
-      sudo chown -R testadmin:testadmin /data/benchmark
+      sudo chown -R $REMOTE_USER:$REMOTE_USER /data/benchmark
       sudo chmod 2700 /data/benchmark
     readyTimeout: '20000'
-# CopyFilesOverSSH
+  env:
+    REMOTE_USER: $(remoteUser)  
+
+# CopyFilesOverSSH on vm-01
 - task: Bash@3
   inputs:
     targetType: 'inline'
     script: |
       # Write for VM-01 Preparation
+      
+      echo "FIO_SIZE              = $FIO_SIZE              | tee ./benchmark/.env 
+      echo "FIO_OFFSET_INCREMENT  = $FIO_OFFSET_INCREMENT  | tee -a ./benchmark/.env 
+      echo "FIO_DIRECT            = $FIO_DIRECT            | tee -a ./benchmark/.env
+      echo "FIO_BENCH_QUICK       = $FIO_BENCH_QUICK       | tee -a ./benchmark/.env
+      echo "RUN_IPERF             = $RUN_IPERF             | tee -a ./benchmark/.env
+      echo "IPERF_REMOTE_SERVER   = $IPERF_REMOTE_SERVER   | tee -a ./benchmark/.env
+      echo "IPERF_PORT            = $IPERF_PORT            | tee -a ./benchmark/.env
+      echo "RUN_HOUSEKEEPING      = $RUN_HOUSEKEEPING      | tee -a ./benchmark/.env 
+      
+      SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
+
+      echo "Secret File Resides here.. $SSH_KEY_FILE"
+
+      cat $SSH_KEY_FILE
+
+      # Pem file is too open
+      chmod 0600 $SSH_KEY_FILE
+      
+      ## REMOVE when ready
+      ls -al ./benchmark/ 
+    
+      ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
+      
+      # copy using ssh keys from agent to target machine
+      # to see the transfer progress
+      # ... -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/ ...
+      rsync -q -av -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/  $REMOTE_USER@$TARGET_SERVER:/data/benchmark/
+
+      ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+      
+      # Change Permissions
+      sudo chown -R root:root /data/benchmark/
+      sudo chmod -R 2700 /data/benchmark/
+      sudo chmod -R 700 /data/benchmark/
+      
+      # List the content 
+      VAR1=`ls -al /data/benchmark`
+      echo "$VAR1"
+
+      EOSSH
+  env:
+    SSH_KEY_FILE: "./.ssh/terraform_rsa.pem"
+    TARGET_SERVER: $(tgtServer01)
+    REMOTE_USER: $(remoteUser)
+    FIO_SIZE: $(fioSize)
+    FIO_OFFSET_INCREMENT : $(fioOffsetIncrement)
+    FIO_DIRECT: $(fioDirect)
+    FIO_BENCH_QUICK : $(fioBenchQuick)
+    RUN_IPERF : $(runIperf)
+    IPERF_REMOTE_SERVER : $(iperfRemoteServer02)
+    IPERF_PORT: $(iperfPort)
+
+# CopyFilesOverSSH on vm-02
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Write for VM-02 Preparation
       
       echo "FIO_SIZE              = $FIO_SIZE              | tee ./benchmark/.env 
       echo "FIO_OFFSET_INCREMENT  = $FIO_OFFSET_INCREMENT  | tee -a ./benchmark/.env 
@@ -52,64 +116,43 @@ steps:
       ## REMOVE when ready
       ls -al ./benchmark/ 
     
-      ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$HOST "date"
+      ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
       
       # copy using ssh keys from agent to target machine
-      rsync -av -e "ssh -i $SSH_KEY_FILE" --progress ./benchmark/  $REMOTE_USER@$HOST:/data/benchmark/
+      # to see the transfer progress
+      # ... -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/ ...
+      rsync -q -av -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/  $REMOTE_USER@$TARGET_SERVER:/data/benchmark/
 
-      ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$HOST <<'EOSSH'
+      ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+      
+      # Change Permissions
+      sudo chown -R root:root /data/benchmark/
+      sudo chmod -R 2700 /data/benchmark/
+      sudo chmod -R 700 /data/benchmark/
       
       # List the content 
       VAR1=`ls -al /data/benchmark`
-      echo $VAR1
+      echo "$VAR1"
 
       EOSSH
   env:
     SSH_KEY_FILE: "./.ssh/terraform_rsa.pem"
-    HOST: "51.132.25.102"
-    REMOTE_USER: "testadmin"
-    FIO_SIZE: "2G"
-    FIO_OFFSET_INCREMENT : "500M"
-    FIO_DIRECT: "1"
-    FIO_BENCH_QUICK : "no"
-    RUN_IPERF : "Y"
-    IPERF_REMOTE_SERVER : "10.0.2.5"
-    IPERF_PORT: "8010"
-    RUN_HOUSEKEEPING : "Y"  
+    TARGET_SERVER: $(tgtServer02)
+    REMOTE_USER: $(remoteUser)
+    FIO_SIZE: $(fioSize)
+    FIO_OFFSET_INCREMENT : $(fioOffsetIncrement)
+    FIO_DIRECT: $(fioDirect)
+    FIO_BENCH_QUICK : $(fioBenchQuick)
+    RUN_IPERF : $(runIperf)
+    IPERF_REMOTE_SERVER : $(iperfRemoteServer01)
+    IPERF_PORT: $(iperfPort)
 
-# - task: SSH@0
-#   inputs:
-#     sshEndpoint: 'vm01srvconn'
-#     runOptions: 'inline'
-#     inline: |
-#       sudo chown -R root:root /data/benchmark/
-#       sudo chmod -R 2700 /data/benchmark/
-#       sudo chmod -R 700 /data/benchmark/
-#     readyTimeout: '20000'
-# - task: SSH@0
-#   inputs:
-#     sshEndpoint: 'vm02srvconn'
-#     runOptions: 'inline'
-#     inline: |
-#       sudo chown -R root:root /data/benchmark/
-#       sudo chmod -R 2700 /data/benchmark/
-#       sudo chmod -R 700 /data/benchmark/
-#     readyTimeout: '20000'
-# - task: SSH@0
-#   inputs:
-#     sshEndpoint: 'vm02srvconn'
-#     runOptions: 'inline'
-#     inline: |
-#       sudo chown -R root:root /data/benchmark/
-#       sudo chmod -R 2700 /data/benchmark/
-#       sudo chmod -R 700 /data/benchmark/
-#     readyTimeout: '20000'
-# - task: SSH@0
-#   inputs:
-#     sshEndpoint: 'vm02srvconn'
-#     runOptions: 'commands'
-#     commands: 'sudo iperf3 -s -p 8010 2>&1'
-#     readyTimeout: '20000'
+- task: SSH@0
+  inputs:
+    sshEndpoint: 'vm02srvconn'
+    runOptions: 'commands'
+    commands: 'sudo iperf3 -s -p 8010 2>&1 &'
+    readyTimeout: '20000'
 
 # - task: SSH@0
 #   inputs:
