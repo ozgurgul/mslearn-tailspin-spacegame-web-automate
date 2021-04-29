@@ -39,9 +39,9 @@ steps:
       # Pem file is too open
       chmod 0600 ./.ssh/terraform_rsa.pem
       
-      ls -alR . 
-      #ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "date"
-    
+      # ls -alR . 
+      # ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "date"
+      ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "date" 
 
 # - task: SSH@0
 #   inputs:
