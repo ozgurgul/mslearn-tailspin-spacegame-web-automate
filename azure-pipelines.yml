@@ -53,17 +53,21 @@ stages:
         displayName: 'Download SSH Private Key File '
         inputs:
           secureFile: 'terraform_rsa.pem'
-    
-      - script: |
-          
-          echo "This is me: $(id)" 
+ 
+      # CopyFilesOverSSH on vm-01
+      - task: Bash@3
+        inputs:
+          targetType: 'inline'
+          script: |
+              
+              echo "This is me: $(id)" 
 
-          echo Installing $(sshPrivFile.secureFilePath) to the trusted CA directory...
-          sudo chown root:root $(sshPrivFile.secureFilePath)
-          sudo chmod 600 $(sshPrivFile.secureFilePath)
-          sudo ln -s -t ./.ssh/ $(caCertificate.secureFilePath)
+              echo Installing $(sshPrivFile.secureFilePath) to the trusted CA directory...
+              sudo chown root:root $(sshPrivFile.secureFilePath)
+              sudo chmod 600 $(sshPrivFile.secureFilePath)
+              sudo ln -s -t ./.ssh/ $(caCertificate.secureFilePath)
 
-          ls -al ./.ssh/
+              ls -al ./.ssh/
 
       # CopyFilesOverSSH on vm-01
       - task: Bash@3
