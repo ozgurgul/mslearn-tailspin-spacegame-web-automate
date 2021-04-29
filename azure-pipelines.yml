@@ -41,7 +41,7 @@ steps:
       
       # ls -alR . 
       # ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "date"
-      ssh -v -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "date" 
+      ssh -i ./.ssh/terraform_rsa.pem -o StrictHostKeyChecking=no testadmin@51.132.25.102 "date" 
 
 # - task: SSH@0
 #   inputs:
