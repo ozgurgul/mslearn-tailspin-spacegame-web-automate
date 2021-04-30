@@ -61,7 +61,7 @@ stages:
             ## DEBUG ##
             echo "Remote User: $(remoteUser)"
             ## END ## 
-            
+
             # Prepare landing directory
             sudo mkdir -p /data/benchmark
             sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
@@ -71,7 +71,7 @@ stages:
             # List the content 
             VAR1=`ls -al /data/benchmark`
             echo "$VAR1"
-            END
+            ## END ##
             
             EOSSH
         env:
