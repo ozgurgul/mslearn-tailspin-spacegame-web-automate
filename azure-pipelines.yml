@@ -52,12 +52,16 @@ stages:
           targetType: 'inline'
           script: |
             # Make Directory Structure on VM-01 Preparation
-            
+            TARGET_SERVER=$(tgtServer01)
+            REMOTE_USER=$(remoteUser)
             SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
+
             ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
             
+            ## DEBUG ##
             echo "Remote User: $(remoteUser)"
-
+            ## END ## 
+            
             # Prepare landing directory
             sudo mkdir -p /data/benchmark
             sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
