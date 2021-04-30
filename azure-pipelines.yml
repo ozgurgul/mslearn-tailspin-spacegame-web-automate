@@ -211,7 +211,7 @@ stages:
           runOptions: 'inline'
           inline: |
             cd /data/benchmark
-            sudo bash -c './perf_bench.sh'
+            sudo ./perf_bench.sh
           readyTimeout: '20000'
 
       - task: SSH@0
