@@ -86,7 +86,7 @@ ipv4=$( wget -qO- -t1 -T2 icanhazip.com )
 # test if the host has IPv4/IPv6 connectivity
 IPV4_CHECK=$((ping -4 -c 1 -W 4 test-ipv4.com >/dev/null 2>&1 && echo true) || curl -s -4 -m 4 icanhazip.com 2> /dev/null)
 IPV6_CHECK=$((ping -6 -c 1 -W 4 test-ipv6.com >/dev/null 2>&1 && echo true) || curl -s -6 -m 4 icanhazip.com 2> /dev/null)
-ping -6 -c 1 -W 4 ipv6.icanhazip.com
+
 
 # # Colors
 # RED='\033[0;31m'
