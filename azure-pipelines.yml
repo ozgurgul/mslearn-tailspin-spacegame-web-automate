@@ -24,6 +24,27 @@ stages:
       - group: EnvSource
 
       steps:
+        # Downloads a secure certificate file and installs to ./.ssh folder
+      - task: DownloadSecureFile@1
+        name: sshPrivFile
+        displayName: 'Download SSH Private Key File '
+        inputs:
+          secureFile: 'terraform_rsa.pem'
+ 
+      # Soft linking 
+      - task: Bash@3
+        displayName: 'Soft linking the priv key file'
+        inputs:
+          targetType: 'inline'
+          script: |
+              ## DEBUG ##
+              echo "This is me: $(id)" 
+              ## END ##
+              # Move the pem file
+              echo "Copying $(sshPrivFile.secureFilePath) to the Temp directory..."
+              sudo cp $(sshPrivFile.secureFilePath) $(Agent.TempDirectory)
+              sudo chmod 600 $(Agent.TempDirectory)/terraform_rsa.pem
+
       # Prepare the directory structure on VM-01    
       - task: Bash@3
         displayName: 'Prepare the directory structure on VM-01'
@@ -62,27 +83,6 @@ stages:
             sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
             sudo chmod 2700 /data/benchmark
           readyTimeout: '40000'
-
-      # Downloads a secure certificate file and installs to ./.ssh folder
-      - task: DownloadSecureFile@1
-        name: sshPrivFile
-        displayName: 'Download SSH Private Key File '
-        inputs:
-          secureFile: 'terraform_rsa.pem'
- 
-      # Soft linking 
-      - task: Bash@3
-        displayName: 'Soft linking the priv key file'
-        inputs:
-          targetType: 'inline'
-          script: |
-              ## DEBUG ##
-              echo "This is me: $(id)" 
-              ## END ##
-              # Move the pem file
-              echo "Copying $(sshPrivFile.secureFilePath) to the Temp directory..."
-              sudo cp $(sshPrivFile.secureFilePath) $(Agent.TempDirectory)
-              sudo chmod 600 $(Agent.TempDirectory)/terraform_rsa.pem
               
       # CopyFilesOverSSH on vm-01
       - task: Bash@3
