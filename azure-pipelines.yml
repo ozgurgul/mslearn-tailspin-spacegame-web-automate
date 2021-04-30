@@ -196,7 +196,12 @@ stages:
         inputs:
           sshEndpoint: 'vm02SrvConn'
           runOptions: 'inline'
-          inline: 'nohup sudo iperf3 -s -p 8010 </dev/null >/dev/null 2>&1 &'
+          inline: |
+            # kill if there is any iperf server running
+            pgrep -x iperf3 >/dev/null && sudo pkill iperf3 || echo "Process not found" 
+            pgrep -x sudo >/dev/null && sudo pkill sudo || echo "Process not found" 
+
+            nohup sudo iperf3 -s -p 8010 </dev/null >/dev/null 2>&1 &'
           readyTimeout: '20000'
 
       - task: SSH@0
@@ -204,7 +209,7 @@ stages:
         inputs:
           sshEndpoint: 'vm01SrvConn'
           runOptions: 'script'
-          scriptPath: 'benchmark/perf_bench.sh'
+          scriptPath: './benchmark/perf_bench.sh'
           readyTimeout: '20000'
 
       - task: SSH@0
@@ -213,8 +218,9 @@ stages:
           sshEndpoint: 'vm02SrvConn'
           runOptions: 'inline'
           inline: |
-            sudo pkill iperf3
-            sudo pkill sudo
+            # kill if there is any iperf server running
+            pgrep -x iperf3 >/dev/null && sudo pkill iperf3 || echo "Process not found" 
+            pgrep -x sudo >/dev/null && sudo pkill sudo || echo "Process not found" 
           readyTimeout: '40000'
 
           # Reutilise the JSON file 
