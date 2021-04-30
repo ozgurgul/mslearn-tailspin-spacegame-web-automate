@@ -31,13 +31,34 @@ stages:
           sshEndpoint: 'vm01SrvConn'
           runOptions: 'inline'
           inline: |
+            
+          readyTimeout: '40000'
+      
+      - task: Bash@3
+        displayName: 'Prepare the directory structure on VM-01'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Make Directory Structure on VM-01 Preparation
+            
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+            
             echo "Remote User: $(remoteUser)"
 
             # Prepare landing directory
             sudo mkdir -p /data/benchmark
             sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
             sudo chmod 2700 /data/benchmark
-          readyTimeout: '40000'
+            
+            ## DEBUG ##
+            # List the content 
+            VAR1=`ls -al /data/benchmark`
+            echo "$VAR1"
+            END
+            
+            EOSSH
+        env:
+          SSH_KEY_FILE: "./.ssh/terraform_rsa.pem"
 
       # Prepare the directory structure on VM-02    
       - task: SSH@0
@@ -64,9 +85,10 @@ stages:
         inputs:
           targetType: 'inline'
           script: |
-              # Move the pem file
+              ## DEBUG ##
               echo "This is me: $(id)" 
-
+              ## END ##
+              # Move the pem file
               echo "Copying $(sshPrivFile.secureFilePath) to the Temp directory..."
               sudo cp $(sshPrivFile.secureFilePath) $(Agent.TempDirectory)
               sudo chmod 600 $(Agent.TempDirectory)/terraform_rsa.pem
@@ -93,8 +115,9 @@ stages:
             # Avoid Pem file is too open
             chmod 0600 $SSH_KEY_FILE
             
-            ## REMOVE when ready
+            ## DEBUG ##
             ls -al ./benchmark/ 
+            ## END ##
           
             ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
             
@@ -106,13 +129,15 @@ stages:
             ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
             
             # Change Permissions
-            sudo chown -R root:root /data/benchmark/
-            sudo chmod -R 2700 /data/benchmark/
-            sudo chmod -R 700 /data/benchmark/
+            sudo chown -R root:root /data/benchmark/*
+            sudo chmod -R 2700 /data/benchmark/*
+            sudo chmod -R 700 /data/benchmark/*
             
+            ## DEBUG ##
             # List the content 
             VAR1=`ls -al /data/benchmark`
             echo "$VAR1"
+            END
 
             EOSSH
         env:
@@ -153,9 +178,9 @@ stages:
             ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
             
             # Change Permissions
-            sudo chown -R root:root /data/benchmark/
-            sudo chmod -R 2700 /data/benchmark/
-            sudo chmod -R 700 /data/benchmark/
+            sudo chown -R root:root /data/benchmark/*
+            sudo chmod -R 2700 /data/benchmark/*
+            sudo chmod -R 700 /data/benchmark/*
             
             # List the content 
             VAR1=`ls -al /data/benchmark`
