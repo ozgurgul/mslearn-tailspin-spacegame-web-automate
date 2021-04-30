@@ -187,12 +187,11 @@ stages:
         inputs:
           sshEndpoint: 'vm02SrvConn'
           runOptions: 'inline'
-          inline: 'nohup sudo iperf3 -s -p 8010 </dev/null >/dev/null 2>&1 &'
+          inline: 'echo "stop iperf" '
           readyTimeout: '20000'
-<<<<<<< HEAD
-      # Reutilise the JSON file 
-      # show the results on the DevOps dashboard
-      # move it to somewhere to be picked up 
-=======
->>>>>>> c25bba68ee4f3027727231bcf72b40f48578e510
 
+          # Reutilise the JSON file 
+
+          # show the results on the DevOps dashboard
+
+          # or move it to somewhere to be picked up 
