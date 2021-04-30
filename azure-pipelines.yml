@@ -4,7 +4,7 @@
 # Version: 0.1 (Alpha)
 
 trigger:
-- '*'
+- 'perf-bench-pipeline'
 
 pr: none
 
@@ -189,4 +189,7 @@ stages:
           runOptions: 'inline'
           inline: 'nohup sudo iperf3 -s -p 8010 </dev/null >/dev/null 2>&1 &'
           readyTimeout: '20000'
+      # Reutilise the JSON file 
+      # show the results on the DevOps dashboard
+      # move it to somewhere to be picked up 
 
