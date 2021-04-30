@@ -476,8 +476,7 @@ calc_disk() {
     echo ${total_size}
 }
 
-echo -e
-date
+echo -e $(date)
 
 # override locale to eliminate parsing errors (i.e. using commas as delimiters rather than periods)
 export LC_ALL=C
@@ -503,7 +502,6 @@ disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot
 disk_total_size=$( calc_disk "${disk_size1[@]}" )
 disk_used_size=$( calc_disk "${disk_size2[@]}" )
 
-clear
 next
 echo -e "Get Sys Perf -- HPE HYBRID CLOUD"
 next
