@@ -135,7 +135,7 @@ stages:
             # List the content 
             VAR1=`ls -al /data/benchmark`
             echo "$VAR1"
-            END
+            ## END ##
 
             EOSSH
         env:
@@ -179,10 +179,12 @@ stages:
             sudo chown -R root:root /data/benchmark/*
             sudo chmod -R 2700 /data/benchmark/*
             sudo chmod -R 700 /data/benchmark/*
-            
+
+            ## DEBUG ##
             # List the content 
             VAR1=`ls -al /data/benchmark`
             echo "$VAR1"
+            ## END ##
 
             EOSSH
         env:
