@@ -187,8 +187,10 @@ stages:
         inputs:
           sshEndpoint: 'vm02SrvConn'
           runOptions: 'inline'
-          inline: 'echo "stop iperf" '
-          readyTimeout: '20000'
+          inline: |
+            sudo pkill iperf3
+            sudo pkill sudo
+          readyTimeout: '40000'
 
           # Reutilise the JSON file 
 
