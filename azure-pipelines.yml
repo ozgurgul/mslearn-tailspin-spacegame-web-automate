@@ -208,8 +208,10 @@ stages:
         displayName: 'Gather Performance Benchmarking stats'
         inputs:
           sshEndpoint: 'vm01SrvConn'
-          runOptions: 'script'
-          scriptPath: './benchmark/perf_bench.sh'
+          runOptions: 'inline'
+          inline: |
+            echo $(pwd)
+            sudo bash -c './benchmark/perf_bench.sh'
           readyTimeout: '20000'
 
       - task: SSH@0
