@@ -198,8 +198,8 @@ stages:
           runOptions: 'inline'
           inline: |
             # kill if there is any iperf server running
-            pgrep -x iperf3 >/dev/null && sudo pkill iperf3 || echo "Process not found" 
-            pgrep -x sudo >/dev/null && sudo pkill sudo || echo "Process not found" 
+            pgrep -x iperf3 >/dev/null && sudo pkill iperf3 || echo "INFO: iperf3 process not found" 
+            pgrep -x sudo >/dev/null && sudo pkill sudo || echo "INFO: sudo process not found" 
 
             nohup sudo iperf3 -s -p 8010 </dev/null >/dev/null 2>&1 &
           readyTimeout: '20000'
@@ -210,8 +210,8 @@ stages:
           sshEndpoint: 'vm01SrvConn'
           runOptions: 'inline'
           inline: |
-            echo $(pwd)
-            sudo bash -c './benchmark/perf_bench.sh'
+            cd /data/benchmark
+            sudo bash -c './perf_bench.sh'
           readyTimeout: '20000'
 
       - task: SSH@0
