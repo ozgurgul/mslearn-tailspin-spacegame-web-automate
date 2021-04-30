@@ -108,7 +108,7 @@ stages:
             echo "FIO_BENCH_QUICK=$(fioBenchQuick)"             | tee -a ./benchmark/.env
             echo "RUN_IPERF=$(runIperf)"                        | tee -a ./benchmark/.env
             echo "IPERF_REMOTE_SERVER=$(iperfRemoteServer02)"   | tee -a ./benchmark/.env
-            echo "IPERF_PORT= $(iperfPort)"                     | tee -a ./benchmark/.env
+            echo "IPERF_PORT=$(iperfPort)"                      | tee -a ./benchmark/.env
             
             # Avoid Pem file is too open
             chmod 0600 $SSH_KEY_FILE
@@ -158,7 +158,7 @@ stages:
             echo "FIO_BENCH_QUICK=$(fioBenchQuick)"             | tee -a ./benchmark/.env
             echo "RUN_IPERF=$(runIperf)"                        | tee -a ./benchmark/.env
             echo "IPERF_REMOTE_SERVER=$(iperfRemoteServer01)"   | tee -a ./benchmark/.env
-            echo "IPERF_PORT= $(iperfPort)"                     | tee -a ./benchmark/.env
+            echo "IPERF_PORT=$(iperfPort)"                      | tee -a ./benchmark/.env
             
             # Pem file is too open
             chmod 0600 $SSH_KEY_FILE
