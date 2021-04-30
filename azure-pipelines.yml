@@ -44,6 +44,18 @@ stages:
               echo "Copying $(sshPrivFile.secureFilePath) to the Temp directory..."
               sudo cp $(sshPrivFile.secureFilePath) $(Agent.TempDirectory)
               sudo chmod 600 $(Agent.TempDirectory)/terraform_rsa.pem
+     
+      # Prepare the directory structure on VM-02    
+      - task: SSH@0
+        displayName: 'Prepare the directory structure on VM-02'
+        inputs:
+          sshEndpoint: 'vm02SrvConn'
+          runOptions: 'inline'
+          inline: |
+            sudo mkdir -p /data/benchmark
+            sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
+            sudo chmod 2700 /data/benchmark
+          readyTimeout: '40000'
 
       # Prepare the directory structure on VM-01    
       - task: Bash@3
@@ -77,17 +89,7 @@ stages:
         env:
           SSH_KEY_FILE: "./.ssh/terraform_rsa.pem"
 
-      # Prepare the directory structure on VM-02    
-      - task: SSH@0
-        displayName: 'Prepare the directory structure on VM-02'
-        inputs:
-          sshEndpoint: 'vm02SrvConn'
-          runOptions: 'inline'
-          inline: |
-            sudo mkdir -p /data/benchmark
-            sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
-            sudo chmod 2700 /data/benchmark
-          readyTimeout: '40000'
+     
               
       # CopyFilesOverSSH on vm-01
       - task: Bash@3
