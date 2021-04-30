@@ -53,6 +53,7 @@ stages:
           script: |
             # Make Directory Structure on VM-01 Preparation
             
+            SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
             ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
             
             echo "Remote User: $(remoteUser)"
