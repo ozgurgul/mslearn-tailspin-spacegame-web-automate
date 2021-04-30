@@ -24,16 +24,7 @@ stages:
       - group: EnvSource
 
       steps:
-      # Prepare the directory structure on VM-01  
-      - task: SSH@0
-        displayName: 'Prepare the directory structure on VM-01' 
-        inputs:
-          sshEndpoint: 'vm01SrvConn'
-          runOptions: 'inline'
-          inline: |
-            
-          readyTimeout: '40000'
-      
+      # Prepare the directory structure on VM-01    
       - task: Bash@3
         displayName: 'Prepare the directory structure on VM-01'
         inputs:
