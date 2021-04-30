@@ -23,6 +23,9 @@ DATE=$( date +"%C%y%m%d_%H%M%S" )
 
 RESULT_OUT=Perf_Benchmarking_$DATE.json
 
+PROJECT_PATH=$1
+cd $PROJECT_PATH
+
 set -o allexport; source ./.env; set +o allexport
 
 FIO_BENCH_MOUNTPOINT=/data/$DATE
