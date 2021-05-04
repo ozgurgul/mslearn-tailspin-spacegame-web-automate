@@ -2,19 +2,43 @@
 <testsuites disabled="0" errors="0" failures="0" tests="4" time="153.535">
     <testsuite disabled="0" errors="0" failures="0" name="my test suite" skipped="0" tests="4" time="153.535" hostname="vm-01">
         <testcase name="Test1-mem" time="123.345000" classname="some.class.mem" file=".\PerformanceTest\dummy.json">
-            <system-out>I am stdout for mem!</system-out>
+            <system-out><![CDATA[
+                ## Hello World
+                This is sparta! 
+
+                Welcome to my world MEM
+                
+             ]]></system-out>
             <system-err>I am stderr for mem!</system-err>
         </testcase>
         <testcase name="Test1-cpu" time="23.345000" classname="some.class.cpu" file=".\PerformanceTest\dummy.json">
-            <system-out>I am stdout for cpu!</system-out>
+            <system-out><![CDATA[
+                ## Hello World
+                This is sparta! 
+
+                Welcome to my world CPU
+                
+             ]]></system-out>
             <system-err>I am stderr for cpu!</system-err>
         </testcase>
         <testcase name="Test1-io" time="3.345000" classname="some.class.io" file=".\PerformanceTest\dummy.json">
-            <system-out>I am stdout for io!</system-out>
+            <system-out><![CDATA[
+                ## Hello World
+                This is sparta! 
+
+                Welcome to my world
+                
+             ]]></system-out>
             <system-err>I am stderr for io!</system-err>
         </testcase>
         <testcase name="Test1-iperf" time="3.500000" classname="some.class.iperf" file=".\PerformanceTest\dummy.json">
-            <system-out>I am stdout for iperf!</system-out>
+            <system-out><![CDATA[
+                ## Hello World
+                This is sparta! 
+
+                Welcome to my world
+                
+             ]]></system-out>
             <system-err>I am stderr for iperf!</system-err>
         </testcase>
     </testsuite>
