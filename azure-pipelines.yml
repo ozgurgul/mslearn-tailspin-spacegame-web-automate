@@ -74,7 +74,7 @@ stages:
             echo "Remote User: $(remoteUser)"
             ## END ## 
 
-            # Prepare landing directory
+            # Prepare landing directory 
             sudo mkdir -p /data/benchmark
             sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
             sudo chmod 2700 /data/benchmark
@@ -223,8 +223,21 @@ stages:
             pgrep -x iperf3 >/dev/null && sudo pgrep -x iperf3 | xargs sudo kill || echo "Process not found"  
           readyTimeout: '40000'
 
-          # Reutilise the JSON file 
+      # Reutilise the JSON file 
+      # meaning regenarate the JUNIT file with XML
+      # Meaning copy to pool agent from target machines 
 
-          # show the results on the DevOps dashboard
-
-          # or move it to somewhere to be picked up 
+      # Publish test results to Azure Pipelines
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'JUnit' # Options: JUnit, NUnit, VSTest, xUnit, cTest
+          testResultsFiles: '**/TEST-*.xml' 
+          searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
+          mergeTestResults: false # Optional
+          failTaskOnFailedTests: false # Optional
+          testRunTitle: Performance Benchmarking # Optional
+          buildPlatform: x64 # Optional
+          buildConfiguration: Release # Optional
+          publishRunAttachments: true # Optional
+      
+      # or move it to somewhere to be picked up 
