@@ -242,7 +242,8 @@ stages:
         inputs:
           targetType: 'inline'
           script: |
-            # give the list of target machines 
+            # give the list of target machines
+            chmod u+x ./benchmark/PerfBenchJunitXML.py 
             ./benchmark/PerfBenchJunitXML.py vm-01 vm-02 
 
       # (4) Publish test results to Azure Pipelines
