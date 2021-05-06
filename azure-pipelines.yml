@@ -260,9 +260,28 @@ stages:
           publishRunAttachments: true # Optional
       
       # (5) Get Test Result list 
-
-      # (5.a) Get the latest run id
+      - task: Bash@3
+        displayName: 'Get top run id of test runs.'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Get a list of test runs and filter the top one
+            RunId=$(curl --location --request GET 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/runs?api-version=6.0' \
+            --header 'Authorization: Basic aGVsbG86NzR5bWZqcmZjcWd0ZTNpb2ZjdDVraWlva2R1d2Q2ZXR6aXlmYzJodzdxMzVzcmNkeDJjcQ==' \
+            --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7d9f-42f6-bf26-e71893f208ae%22%2C%22PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22SignInState%22%3A%7B%7D%7D' \
+            | jq '.value[-1] | .id ' )
+            
+            # Write the AnalyticsHostname and AnalyticsAddress variables to the pipeline.
+            echo "##vso[task.setvariable variable=RunId;isOutput=true]$RunId"
+        name: 'RunCurl'
+  
       # (6) Get Patch/Update Test Plan results
+      - task: Bash@3
+        displayName: 'Get top run id of test runs.'
+        inputs:
+          targetType: 'inline'
+          script: echo $(RunId)
+      
       # (6.a) Get the test plan list ids for each server 
       # (6.b) Patch the test plan results with the snippet
       # (7) Optional - attach the json files
