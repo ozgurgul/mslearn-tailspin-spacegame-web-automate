@@ -273,7 +273,7 @@ stages:
             PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000\
             %22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000\
             %22%2C%22SignInState%22%3A%7B%7D%7D' \
-            | jq -c ` 
+             ` 
             #| jq '.value[-1] | .id ' )
             
             echo "Run ID = $RunId"
@@ -284,7 +284,7 @@ stages:
   
       # (6) Get Patch/Update Test Plan results
       - task: Bash@3
-        displayName: 'Get top run id of test runs.'
+        displayName: 'Get test plans which will be patched.'
         inputs:
           targetType: 'inline'
           script: echo $(RunId)
