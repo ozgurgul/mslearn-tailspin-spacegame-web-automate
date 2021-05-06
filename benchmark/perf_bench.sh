@@ -21,7 +21,7 @@
 
 DATE=$( date +"%C%y%m%d_%H%M%S" )
 
-RESULT_OUT=Perf_Benchmarking_$DATE.json
+RESULT_OUT=Perf_Benchmarking.json
 
 PROJECT_PATH=$1
 cd $PROJECT_PATH

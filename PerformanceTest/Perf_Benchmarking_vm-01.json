@@ -1,0 +1,161 @@
+{
+    "Basic System Information":[
+       {
+          "Date":"20210427_181545",
+          "System type":"HYPER-V",
+          "CPU model":"Intel(R) Xeon(R) CPU E5-2673 v3 @ 2.40GHz",
+          "Number of cores":"2",
+          "CPU frequency":"2394.454 MHz",
+          "Total size of Disk":"49.8 GB (4.6 GB Used)",
+          "Total amount of Mem":"6791 MB (604 MB Used)",
+          "Total amount of Swap":"0 MB (0 MB Used)",
+          "System uptime":"0 days, 2 hour 47 min",
+          "Load average":"0.01, 0.03, 0.15",
+          "OS":"Red Linux",
+          "Arch":"x86_64 (64 Bit)",
+          "Kernel":"3.10.0-1160.15.2.el7.x86_64.debug",
+          "ISP":"Microsoft Corporation",
+          "ASN":"AS8075 Microsoft Corporation",
+          "AES-NI":"✔ Enabled",
+          "IPv6 Support":"No"
+       }
+    ],
+    "fio.jobs.read":[
+       {
+          "io_bytes":501731328,
+          "io_kbytes":489972,
+          "bw_bytes":33439837,
+          "bw":32656,
+          "iops":8159.824047,
+          "runtime":15004,
+          "total_ios":122430,
+          "short_ios":0,
+          "drop_ios":0,
+          "bw_min":30784,
+          "bw_max":34496,
+          "bw_agg":99.922015,
+          "bw_mean":32630.533333,
+          "bw_dev":953.804423,
+          "bw_samples":30,
+          "iops_min":7696,
+          "iops_max":8624,
+          "iops_mean":8157.566667,
+          "iops_stddev":238.485839,
+          "iops_samples":30
+       }
+    ],
+    "fio.jobs.write":[
+       {
+          "io_bytes":34332672,
+          "io_kbytes":33528,
+          "bw_bytes":2030918,
+          "bw":1983,
+          "iops":492.102928,
+          "runtime":16905,
+          "total_ios":8319,
+          "short_ios":0,
+          "drop_ios":0,
+          "bw_min":368,
+          "bw_max":2864,
+          "bw_agg":100,
+          "bw_mean":2146.193548,
+          "bw_dev":396.386295,
+          "bw_samples":31,
+          "iops_min":92,
+          "iops_max":716,
+          "iops_mean":536.451613,
+          "iops_stddev":99.073992,
+          "iops_samples":31
+       }
+    ],
+    "fio.jobs.read_bw":[
+       {
+          "io_bytes":3069181952,
+          "io_kbytes":2997248,
+          "bw_bytes":203891712,
+          "bw":199113,
+          "iops":1551.385106,
+          "runtime":15053,
+          "total_ios":23353,
+          "short_ios":0,
+          "drop_ios":0,
+          "bw_min":191488,
+          "bw_max":206848,
+          "bw_agg":99.969046,
+          "bw_mean":199051.366667,
+          "bw_dev":3328.651487,
+          "bw_samples":30,
+          "iops_min":1496,
+          "iops_max":1616,
+          "iops_mean":1555,
+          "iops_stddev":26.011934,
+          "iops_samples":30
+       }
+    ],
+    "jobs.write_bw":[
+       {
+          "io_bytes":1107034112,
+          "io_kbytes":1081088,
+          "bw_bytes":73240761,
+          "bw":71524,
+          "iops":554.614621,
+          "runtime":15115,
+          "total_ios":8383,
+          "short_ios":0,
+          "drop_ios":0,
+          "bw_min":57088,
+          "bw_max":79104,
+          "bw_agg":99.947989,
+          "bw_mean":71486.8,
+          "bw_dev":4508.896726,
+          "bw_samples":30,
+          "iops_min":446,
+          "iops_max":618,
+          "iops_mean":558.266667,
+          "iops_stddev":35.114525,
+          "iops_samples":30
+       }
+    ],
+    "fio.jobs.read.lat_ns": [
+       {
+          "min":38700,
+          "max":34230600,
+          "mean":488567.991299,
+          "stddev":1690436.753006
+       }
+    ],
+    "jobs.write.lat_ns": [
+       {
+          "min":57800,
+          "max":4351034200,
+          "mean":12688365.127416,
+          "stddev":152816360.564021
+       }
+    ],
+    "jobs.read_seq":"194MiB/s",
+    "jobs.write_seq":"98.8MiB/s",
+    "iops.rw_mix": [
+       {
+          "jobs.rw_mix_r_iops":"1207",
+          "jobs.rw_mix_w_iops":"398"
+       }
+    ],
+    "sysbench.cpu":{
+       "threads":"1",
+       "time":"60.0004",
+       "events":"17869",
+       "min":"2.82",
+       "avg":"3.36",
+       "max":"14.46",
+       "percentile":"3.89"
+    },
+    "sysbench.memory":{
+       "transferred":"13418.59 MiB/sec",
+       "threads":"1",
+       "events":"102400",
+       "min":"0.06",
+       "avg":"0.07",
+       "max":"9.73",
+       "percentile":"0.09"
+    }
+ }

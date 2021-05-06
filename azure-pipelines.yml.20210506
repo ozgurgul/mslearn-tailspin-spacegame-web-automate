@@ -1,0 +1,243 @@
+# Performance Benchmarking Script on Centos
+# Author: Ozgur Gul (HPE)
+# Date: 2021/04/29
+# Version: 0.1 (Alpha)
+
+trigger:
+- 'perf-bench-pipeline'
+
+pr: none
+
+variables:
+  buildConfiguration: 'EnvSource'
+
+stages:
+  - stage: 'Dev'
+    displayName: 'Deploy to the dev environment'
+    jobs:
+    - job: Provision
+      displayName: 'Provision Azure App Service'
+      pool:
+        vmImage: 'ubuntu-18.04'
+      
+      variables:
+      - group: EnvSource
+
+      steps:
+        # Downloads a secure certificate file and installs to ./.ssh folder
+      - task: DownloadSecureFile@1
+        name: sshPrivFile
+        displayName: 'Download SSH Private Key File '
+        inputs:
+          secureFile: 'terraform_rsa.pem'
+ 
+      # Soft linking 
+      - task: Bash@3
+        displayName: 'Soft linking the priv key file'
+        inputs:
+          targetType: 'inline'
+          script: |
+              ## DEBUG ##
+              echo "This is me: $(id)" 
+              ## END ##
+              # Move the pem file
+              echo "Copying $(sshPrivFile.secureFilePath) to the Temp directory..."
+              sudo cp $(sshPrivFile.secureFilePath) $(Agent.TempDirectory)
+              sudo chmod 600 $(Agent.TempDirectory)/terraform_rsa.pem
+     
+      # Prepare the directory structure on VM-02    
+      - task: SSH@0
+        displayName: 'Prepare the directory structure on VM-02'
+        inputs:
+          sshEndpoint: 'vm02SrvConn'
+          runOptions: 'inline'
+          inline: |
+            sudo mkdir -p /data/benchmark
+            sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
+            sudo chmod 2700 /data/benchmark
+          readyTimeout: '40000'
+
+      # Prepare the directory structure on VM-01    
+      - task: Bash@3
+        displayName: 'Prepare the directory structure on VM-01'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Make Directory Structure on VM-01 Preparation
+            TARGET_SERVER=$(tgtServer01)
+            REMOTE_USER=$(remoteUser)
+            SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
+
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+            
+            ## DEBUG ##
+            echo "Remote User: $(remoteUser)"
+            ## END ## 
+
+            # Prepare landing directory 
+            sudo mkdir -p /data/benchmark
+            sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
+            sudo chmod 2700 /data/benchmark
+            
+            ## DEBUG ##
+            # List the content 
+            VAR1=`ls -al /data/benchmark`
+            echo "$VAR1"
+            ## END ##
+            
+            EOSSH
+        env:
+          SSH_KEY_FILE: "./.ssh/terraform_rsa.pem"
+
+     
+              
+      # CopyFilesOverSSH on vm-01
+      - task: Bash@3
+        displayName: 'CopyFilesOverSSH on vm-01'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Write for VM-01 Preparation
+            TARGET_SERVER=$(tgtServer01)
+            REMOTE_USER=$(remoteUser)
+            SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
+
+            echo "FIO_SIZE=$(fioSize)"                          | tee ./benchmark/.env 
+            echo "FIO_OFFSET_INCREMENT=$(fioOffsetIncrement)"   | tee -a ./benchmark/.env 
+            echo "FIO_DIRECT=$(fioDirect)"                      | tee -a ./benchmark/.env
+            echo "FIO_BENCH_QUICK=$(fioBenchQuick)"             | tee -a ./benchmark/.env
+            echo "RUN_IPERF=$(runIperf)"                        | tee -a ./benchmark/.env
+            echo "IPERF_REMOTE_SERVER=$(iperfRemoteServer02)"   | tee -a ./benchmark/.env
+            echo "IPERF_PORT=$(iperfPort)"                      | tee -a ./benchmark/.env
+            
+            # Avoid Pem file is too open
+            chmod 0600 $SSH_KEY_FILE
+            
+            ## DEBUG ##
+            ls -al ./benchmark/ 
+            ## END ##
+          
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
+            
+            # copy using ssh keys from agent to target machine
+            # to see the transfer progress
+            # ... -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/ ...
+            rsync -q -av -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/  $REMOTE_USER@$TARGET_SERVER:/data/benchmark/
+
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+            
+            # Change Permissions
+            sudo chown -R root:root /data/benchmark/*
+            sudo chmod -R 2700 /data/benchmark/*
+            sudo chmod -R 700 /data/benchmark/*
+            
+            ## DEBUG ##
+            # List the content 
+            VAR1=`ls -al /data/benchmark`
+            echo "$VAR1"
+            ## END ##
+
+            EOSSH
+        env:
+          SSH_KEY_FILE: "./.ssh/terraform_rsa.pem"
+
+      # CopyFilesOverSSH on vm-02
+      - task: Bash@3
+        displayName: 'CopyFilesOverSSH on vm-02'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Write for VM-02 Preparation
+            TARGET_SERVER=$(tgtServer02)
+            REMOTE_USER=$(remoteUser)
+            SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
+            
+            echo "FIO_SIZE=$(fioSize)"                          | tee ./benchmark/.env 
+            echo "FIO_OFFSET_INCREMENT=$(fioOffsetIncrement)"   | tee -a ./benchmark/.env 
+            echo "FIO_DIRECT=$(fioDirect)"                      | tee -a ./benchmark/.env
+            echo "FIO_BENCH_QUICK=$(fioBenchQuick)"             | tee -a ./benchmark/.env
+            echo "RUN_IPERF=$(runIperf)"                        | tee -a ./benchmark/.env
+            echo "IPERF_REMOTE_SERVER=$(iperfRemoteServer01)"   | tee -a ./benchmark/.env
+            echo "IPERF_PORT=$(iperfPort)"                      | tee -a ./benchmark/.env
+            
+            # Pem file is too open
+            chmod 0600 $SSH_KEY_FILE
+            
+            ## REMOVE when ready
+            ls -al ./benchmark/ 
+          
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
+            
+            # copy using ssh keys from agent to target machine
+            # to see the transfer progress
+            # ... -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/ ...
+            rsync -q -av -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/  $REMOTE_USER@$TARGET_SERVER:/data/benchmark/
+
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+            
+            # Change Permissions
+            sudo chown -R root:root /data/benchmark/*
+            sudo chmod -R 2700 /data/benchmark/*
+            sudo chmod -R 700 /data/benchmark/*
+
+            ## DEBUG ##
+            # List the content 
+            VAR1=`ls -al /data/benchmark`
+            echo "$VAR1"
+            ## END ##
+
+            EOSSH
+        env:
+          SSH_KEYFILE: "./.ssh/terraform_rsa.pem"
+          
+
+      - task: SSH@0
+        displayName: 'Start the iperf on vm-02 as a daemon'
+        inputs:
+          sshEndpoint: 'vm02SrvConn'
+          runOptions: 'inline'
+          inline: |
+            # kill if there is any iperf server running
+            pgrep -x iperf3 >/dev/null && sudo pgrep -x iperf3 | xargs sudo kill || echo "Process not found" 
+
+            nohup sudo iperf3 -s -p 8010 </dev/null >/dev/null 2>&1 &
+          readyTimeout: '20000'
+
+      - task: SSH@0
+        displayName: 'Gather Performance Benchmarking stats'
+        inputs:
+          sshEndpoint: 'vm01SrvConn'
+          runOptions: 'inline'
+          inline: |
+            cd /data/benchmark
+            sudo ./perf_bench.sh /data/benchmark
+          readyTimeout: '20000'
+
+      - task: SSH@0
+        displayName: 'Stop the iperf on vm-02'
+        inputs:
+          sshEndpoint: 'vm02SrvConn'
+          runOptions: 'inline'
+          inline: |
+            # kill if there is any iperf server running
+            pgrep -x iperf3 >/dev/null && sudo pgrep -x iperf3 | xargs sudo kill || echo "Process not found"  
+          readyTimeout: '40000'
+
+      # Reutilise the JSON file 
+      # meaning regenarate the JUNIT file with XML
+      # Meaning copy to pool agent from target machines 
+
+      # Publish test results to Azure Pipelines
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'JUnit' # Options: JUnit, NUnit, VSTest, xUnit, cTest
+          testResultsFiles: '**/TEST-*.xml' 
+          searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
+          mergeTestResults: false # Optional
+          failTaskOnFailedTests: false # Optional
+          testRunTitle: Performance Benchmarking # Optional
+          buildPlatform: x64 # Optional
+          buildConfiguration: Release # Optional
+          publishRunAttachments: true # Optional
+      
+      # or move it to somewhere to be picked up 
