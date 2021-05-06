@@ -10,6 +10,7 @@ pr: none
 
 variables:
   buildConfiguration: 'EnvSource'
+  RunId: ${{ 0 }}
 
 stages:
   - stage: 'Dev'
