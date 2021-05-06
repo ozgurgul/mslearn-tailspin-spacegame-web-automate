@@ -93,16 +93,18 @@ Run the following az ad sp delete command to delete your service principal. Repl
 
 `az ad sp delete --id http://tf-sp-28277`
 
-## Contributing
+## Swagger Azure Test Management API
+### Azure DevOps Postman Collections
+https://github.com/ozgurgul/azuredevops-postman-collections
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+### MicrosoftDocs/vsts-rest-api-specs
+https://github.com/MicrosoftDocs/vsts-rest-api-specs
 
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
+Results - Update test results in a test run.
+Comment in a test result with maxSize= 1000 chars.
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+https://docs.microsoft.com/en-us/rest/api/azure/devops/test/results/update?view=azure-devops-rest-6.0
+
+### Azure DevOps Python API
+This repository contains Python APIs for interacting with and managing Azure DevOps. These APIs power the Azure DevOps Extension for Azure CLI. To learn more about the Azure DevOps Extension for Azure CLI, visit the Microsoft/azure-devops-cli-extension repo.
+https://github.com/microsoft/azure-devops-python-api
