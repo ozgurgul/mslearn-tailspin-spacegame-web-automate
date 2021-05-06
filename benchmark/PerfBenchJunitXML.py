@@ -23,7 +23,7 @@ def main(argv):
         
     # pretty printing is on by default but can be disabled using prettyprint=False
     ts = map(add_test_cases, argv)
-    print(TestSuite.to_xml_string(ts))
+    to_file_str = TestSuite.to_xml_string(ts)
 
     # Get the current time
     utc_datetime = datetime.utcnow()
@@ -31,8 +31,9 @@ def main(argv):
     
     # you can also write the XML to a file and not pretty print it
     with open('./PerformanceTest/' + 'TEST-{date}.xml'.format(date=time_str), 'w') as f:
-        to_xml_report_file(f, ts, prettyprint=True, encoding='utf-8')
+        f.write(to_file_str)
 
+    
 if __name__ == "__main__":
     print(f'List Length:{len(sys.argv)}' )
     print(f'Argument List:{str(sys.argv)}' )
