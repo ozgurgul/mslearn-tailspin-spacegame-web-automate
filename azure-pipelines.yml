@@ -273,10 +273,10 @@ stages:
             PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000\
             %22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000\
             %22%2C%22SignInState%22%3A%7B%7D%7D' \
-            | jq ) 
+            | jq -c ) 
             #| jq '.value[-1] | .id ' )
             
-            echo "Run ID = $(RunId)"
+            echo "Run ID = $RunId"
 
             # Write the AnalyticsHostname and AnalyticsAddress variables to the pipeline.
             echo "##vso[task.setvariable variable=RunId;isOutput=true]$RunId"
