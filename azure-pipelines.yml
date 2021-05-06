@@ -234,7 +234,7 @@ stages:
           targetType: 'inline'
           script: |
             # pip install on the pool agent
-            pip install junit_xml==1.9 six==1.15.0
+            pip3 install junit_xml==1.9 six==1.15.0
    
       # (3) Run python PerfBenchJunitXML.py on pool agent
       - task: Bash@3
@@ -244,7 +244,7 @@ stages:
           script: |
             # give the list of target machines
             chmod u+x ./benchmark/PerfBenchJunitXML.py 
-            ./benchmark/PerfBenchJunitXML.py vm-01 vm-02 
+            python3 ./benchmark/PerfBenchJunitXML.py vm-01 vm-02 
 
       # (4) Publish test results to Azure Pipelines
       - task: PublishTestResults@2
