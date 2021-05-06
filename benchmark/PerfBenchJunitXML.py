@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+import sys
+import os
+from datetime import datetime   
 from junit_xml import TestSuite, TestCase
 from junit_xml import to_xml_report_file
 
@@ -14,10 +18,24 @@ def add_test_cases(server):
     ts.hostname = f'{server}'
     return ts
 
-# pretty printing is on by default but can be disabled using prettyprint=False
-ts=[add_test_cases('vm_01'), add_test_cases('vm_02')]
-print(TestSuite.to_xml_string(ts))
 
-# you can also write the XML to a file and not pretty print it
-with open('output.xml', 'w') as f:
-    to_xml_report_file(f, ts, prettyprint=False, encoding='utf-8')
+def main(argv):
+        
+    # pretty printing is on by default but can be disabled using prettyprint=False
+    ts = map(add_test_cases, argv)
+    print(TestSuite.to_xml_string(ts))
+
+    # Get the current time
+    utc_datetime = datetime.utcnow()
+    time_str = utc_datetime.strftime("%Y%m%d_%H%M%S")
+    
+    # you can also write the XML to a file and not pretty print it
+    with open('./PerformanceTest/' + 'TEST-{date}.xml'.format(date=time_str), 'w') as f:
+        to_xml_report_file(f, ts, prettyprint=True, encoding='utf-8')
+
+if __name__ == "__main__":
+    print(f'List Length:{len(sys.argv)}' )
+    print(f'Argument List:{str(sys.argv)}' )
+
+    # Avoid the first item in the list
+    main(sys.argv[1:])

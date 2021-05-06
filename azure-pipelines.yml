@@ -226,8 +226,26 @@ stages:
       # Reutilise the JSON file 
       # meaning regenarate the JUNIT file with XML
       # Meaning copy to pool agent from target machines 
+      
+      # (2) Install pip modules on pool agent
+      - task: Bash@3
+        displayName: 'Install python module junit_xml==1.9'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # pip install on the pool agent
+            pip install junit_xml==1.9 six==1.15.0
+   
+      # (3) Run python PerfBenchJunitXML.py on pool agent
+      - task: Bash@3
+        displayName: 'Install python module junit_xml==1.9'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # give the list of target machines 
+            python3 .\benchmark\PerformanceBenchmarkJunitXML.py vm-01 vm-02 
 
-      # Publish test results to Azure Pipelines
+      # (4) Publish test results to Azure Pipelines
       - task: PublishTestResults@2
         inputs:
           testResultsFormat: 'JUnit' # Options: JUnit, NUnit, VSTest, xUnit, cTest
@@ -240,4 +258,7 @@ stages:
           buildConfiguration: Release # Optional
           publishRunAttachments: true # Optional
       
-      # or move it to somewhere to be picked up 
+      # (5) Get Test Result list 
+
+      
+      # (6) Get Patch/Update Test Plan results 
