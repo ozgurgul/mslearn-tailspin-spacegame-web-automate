@@ -260,5 +260,8 @@ stages:
       
       # (5) Get Test Result list 
 
-      
-      # (6) Get Patch/Update Test Plan results 
+      # (5.a) Get the latest run id
+      # (6) Get Patch/Update Test Plan results
+      # (6.a) Get the test plan list ids for each server 
+      # (6.b) Patch the test plan results with the snippet
+      # (7) Optional - attach the json files
