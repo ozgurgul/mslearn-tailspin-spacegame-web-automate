@@ -321,7 +321,7 @@ stages:
                   echo "# INFO Benchmark"
                   
                   #echo "\`\`\`"
-                  output=$(cat $__filename | jq ' . | {\"Basic System Information\"} ' )
+                  output=$(cat $__filename | jq " . | {\"Basic System Information\"} " )
                   echo $output
                   #echo "\`\`\`"
                 ;;
