@@ -295,6 +295,20 @@ stages:
         inputs:
           targetType: 'inline'
           script: |
+
+            function prepareData() {
+              # iterate over ids
+              for i in $(echo $1)
+              do
+                id=$(echo $i | cut -f1 -d,)
+                filename="Perf_Benchmarking_$(echo $i | cut -f2 -d, ).json"
+                markdown=$(echo $i | cut -f3 -d, ) 
+                echo "$id / $filename / $markdown "
+                echo  
+              done
+
+            }
+            
             echo $(RunCurl.TestRunId)
 
             PatchList=`curl --silent --location --request GET 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
@@ -311,15 +325,7 @@ stages:
             jq ".value[] | { id, computerName, testCaseTitle } | [.id,.computerName,.testCaseTitle] | @csv" | \
             sed 's/\\"//g' | sed 's/"//g' )
 
-            # iterate over ids
-            for i in $(echo $TestCaseId)
-            do
-              id=$(echo $i | cut -f1 -d,)
-              filename="Perf_Benchmarking_$(echo $i | cut -f2 -d, ).json"
-              markdown=$(echo $i | cut -f3 -d, ) 
-              echo "$id / $filename / $markdown "
-              echo  
-            done
+            $( prepareData $TestCaseId )
 
         name: 'RunPatchList'
 
