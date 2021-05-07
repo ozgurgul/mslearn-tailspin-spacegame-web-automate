@@ -304,32 +304,63 @@ stages:
 
               for i in $(echo $__TestCaseId)
               do
-                local __id=$(echo $i | cut -f1 -d,)
-                local __filename="./PerformanceTest/Perf_Bench_$(echo $i | cut -f2 -d, ).json"
+                local __id=$(echo $i | cut -f1 -d, )
+                local __servername=$(echo $i | cut -f2 -d, )
+                local __filename="./PerformanceTest/Perf_Bench_{$__servername}.json"
                 local __markdown=$(echo $i | cut -f3 -d, ) 
-                $__resultvar=$(echo "$__resultvar"\n $__id / $__filename / $__markdown )
+
+                __resultvar=$(echo "$__resultvar"\n $__id / $__filename / $__markdown )
                 
                 case $__markdown in
-                *info)
-                  echo "id >> $__id "
-                  echo ">> info"
-                  
-                ;;
-                *cpu)
-                  echo ">> cpu"
-                ;;
-                *mem)
-                  echo ">> mem"
-                ;;
-                *io)
-                  echo ">> fio"
-                ;;
-                *iperf)
-                  echo ">> iperf"
-                ;;
+                  *info)
+                    echo "id >> $__id "
+                    echo "server >> $__servername "
+                    cat $__filename | jq ' . | {"Basic System Information"} '
+                  ;;
+
+                  *cpu)
+                    # alternatively, search with
+                    # jq '[.[keys[] | select(startswith("sysbench.cpu"))]]'
+                    echo "id >> $__id "
+                    echo "server >> $__servername "
+                    echo "# CPU Benchmark"
+                    echo "```"
+                    cat $__filename | jq ' . | {"sysbench.cpu"} '
+                    echo "```"
+                    
+                  ;;
+
+                  *mem)
+                    # alternatively, search w/
+                    # jq '[.[keys[] | select(startswith("sysbench.mem"))]]'
+                    echo "id >> $__id "
+                    echo "server >> $__servername "
+                    echo "# MEMORY Benchmark"
+                    echo "```"
+                    cat $__filename | jq ' . | {"sysbench.memory"} '
+                    echo "```"
+                    
+                  ;;
+
+                  *io)
+                    echo "id >> $__id "
+                    echo "server >> $__servername "
+                    echo ">> fio"
+                  ;;
+
+                  *iperf)
+                    echo "id >> $__id "
+                    echo "server >> $__servername "
+                    echo ">> iperf"
+                    echo "# MEMOR\Y Benchmark"
+                    echo "```"
+                    cat $__filename | jq ' . | {"iperf_test"} '
+                    echo "```"
+                    
+                  ;;
                 
                 esac
-                
+
               done
               
               echo "$__resultvar"
