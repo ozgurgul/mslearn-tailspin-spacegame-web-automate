@@ -267,12 +267,12 @@ stages:
           targetType: 'inline'
           script: |
             # Get a list of test runs and filter the top one
-            RunId=$(curl --silent --location --request GET 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/runs?api-version=6.0' \
+            RunId=`curl --silent --location --request GET 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/runs?api-version=6.0' \
             --header 'Authorization: Basic aGVsbG86NzR5bWZqcmZjcWd0ZTNpb2ZjdDVraWlva2R1d2Q2ZXR6aXlmYzJodzdxMzVzcmNkeDJjcQ==' \
             --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7d9f-42f6-bf26-e71893f208ae%22%2C%22\
             PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000\
             %22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000\
-            %22%2C%22SignInState%22%3A%7B%7D%7D' ) 
+            %22%2C%22SignInState%22%3A%7B%7D%7D' ` 
             
             #| jq '.value[-1] | .id ' )
             
