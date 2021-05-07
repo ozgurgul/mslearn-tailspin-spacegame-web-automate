@@ -301,6 +301,9 @@ stages:
               # iterate over ids
               TestCaseId=$(echo "$1") 
 
+              echo "prepareData function"
+              echo "$TestCaseId"
+
               for i in $(echo $TestCaseId)
               do
                 id=$(echo $i | cut -f1 -d,)
@@ -329,7 +332,7 @@ stages:
             jq ".value[] | { id, computerName, testCaseTitle } | [.id,.computerName,.testCaseTitle] | @csv" | \
             sed 's/\\"//g' | sed 's/"//g' )
 
-            dataRaw=$(prepareData $TestCaseId)
+            dataRaw=$(prepareData "$TestCaseId")
 
             echo "$dataRaw"
 
