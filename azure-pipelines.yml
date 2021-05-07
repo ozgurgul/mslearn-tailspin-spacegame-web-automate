@@ -318,7 +318,7 @@ stages:
                     echo "server >> $__servername "
                     echo "# INFO Benchmark"
                     echo "```"
-                    cat $__filename | jq ' . | {\"Basic System Information\"} '
+                    cat $__filename | jq ' . | {\"Basic\ System\ Information\"} '
                     echo "```"
                   ;;
 
