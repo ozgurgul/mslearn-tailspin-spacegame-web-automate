@@ -307,7 +307,7 @@ stages:
 
                 local __id=$(echo $i | cut -f1 -d, )
                 local __servername=$(echo $i | cut -f2 -d, )
-                local __filename="./PerformanceTest/Perf_Bench_$__servername.json"
+                local __filename="$(System.DefaultWorkingDirectory)/PerformanceTest/Perf_Bench_$(__servername).json"
                 local __markdown=$(echo $i | cut -f3 -d, ) 
 
                 __resultvar=$(echo " $__id / $__filename / $__markdown" )
@@ -318,7 +318,7 @@ stages:
                     echo "server >> $__servername "
                     echo "# INFO Benchmark"
                     echo "```"
-                    cat $__filename | jq ' . | {\"Basic\ System\ Information\"} '
+                    cat $__filename | jq " . | {\"Basic\ System\ Information\"} "
                     echo "```"
                   ;;
 
@@ -329,7 +329,7 @@ stages:
                     echo "server >> $__servername "
                     echo "# CPU Benchmark"
                     echo "```"
-                    cat $__filename | jq ' . | {\"sysbench.cpu\"} '
+                    cat $__filename | jq " . | {\"sysbench.cpu\"} "
                     echo "```"
                   ;;
 
@@ -340,7 +340,7 @@ stages:
                     echo "server >> $__servername "
                     echo "# MEMORY Benchmark"
                     echo "```"
-                    cat $__filename | jq ' . | {\"sysbench.memory\"} '
+                    cat $__filename | jq " . | {\"sysbench.memory\"} "
                     echo "```"
                     
                   ;;
@@ -361,7 +361,7 @@ stages:
                     echo ">> iperf"
                     echo "# MEMOR\Y Benchmark"
                     echo "```"
-                    cat $__filename | jq ' . | {\"iperf_test\"} '
+                    cat $__filename | jq " . | {\"iperf_test\"} "
                     echo "```"
                   ;;
                 
