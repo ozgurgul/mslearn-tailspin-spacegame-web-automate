@@ -314,20 +314,15 @@ stages:
                 
                 echo " $__id -- $__filename -- $__markdown " 
                 
-                id
-                pwd 
-
-                ls -al $__filename
-
-              #   case $__markdown in
-              #   *info)
-              #     echo "id >> $__id "
-              #     echo "server >> $__servername "
-              #     echo "# INFO Benchmark"
-              #     echo "```"
-              #     cat $__filename | jq " . | {\"Basic\ System\ Information\"} "
-              #     echo "```"
-              #   ;;
+                case $__markdown in
+                *info)
+                  echo "id >> $__id "
+                  echo "server >> $__servername "
+                  echo "# INFO Benchmark"
+                  echo "```"
+                  cat $__filename | jq " . | {\"Basic\ System\ Information\"} "
+                  echo "```"
+                ;;
 
               #   *cpu)
               #     # alternatively, search with
@@ -372,7 +367,7 @@ stages:
               #     echo "```"
               #   ;;
                 
-              #   esac
+                esac
 
               done
               
