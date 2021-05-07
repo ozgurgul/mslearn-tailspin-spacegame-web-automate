@@ -312,7 +312,7 @@ stages:
 
                 # __resultvar=$(echo " $__id / $__filename / $__markdown" )
                 
-                echo " $__id / $__filename / $__markdown " 
+                echo " $__id -- $__filename -- $__markdown " 
                 
                 id
                 pwd 
