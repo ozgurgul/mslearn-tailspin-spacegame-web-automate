@@ -302,17 +302,38 @@ stages:
               local __TestCaseId=$(echo "$1") 
               local __resultvar=''
 
-              for i in $(echo $TestCaseId)
+              for i in $(echo $__TestCaseId)
               do
                 local __id=$(echo $i | cut -f1 -d,)
                 local __filename="./PerformanceTest/Perf_Bench_$(echo $i | cut -f2 -d, ).json"
                 local __markdown=$(echo $i | cut -f3 -d, ) 
                 $__resultvar=$(echo "$__resultvar"\n $__id / $__filename / $__markdown )
-              
+                
+                case $__markdown in
+                *info)
+                  echo "id >> $__id "
+                  echo ">> info"
+                  
+                ;;
+                *cpu)
+                  echo ">> cpu"
+                ;;
+                *mem)
+                  echo ">> mem"
+                ;;
+                *io)
+                  echo ">> fio"
+                ;;
+                *iperf)
+                  echo ">> iperf"
+                ;;
+                
+                esac
+                
               done
               
               echo "$__resultvar"
-              
+
             }
             
             echo $(RunCurl.TestRunId)
