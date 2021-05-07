@@ -311,17 +311,29 @@ stages:
 
             # DEBUG
             echo "Test Case Patch List :: $TestCaseId"
-
+            echo "##vso[task.setvariable variable=TestCaseId;isOutput=true]$TestCaseId"
+        name: 'RunPatchList'
 
       # (6.a) Get the test plan list ids for each server 
       # (6.b) Patch the test plan results with the JSON snippet
       # Comment in a test case result with maxSize= 1000 chars. 
       - task: Bash@3
-        displayName: 'Get test plans which will be patched.'
+        displayName: 'Update/Patch the comments of test plan results.'
         inputs:
           targetType: 'inline'
           script: |
-            echo "Hello World"
+            iterator=$( echo $(RunPatchList.TestCaseId) | sed 's/\\"//g' | sed 's/"//g' )
+
+            # iterate over ids
+            for i in `echo $iterator`
+            do
+              id=$(echo $i | cut -f1 -d,)
+              filename="Perf_Benchmarking_$(echo $i | cut -f2 -d, ).json"
+              markdown=$(echo $i | cut -f3 -d, ) 
+              echo "$id / $filename / $markdown "
+              echo  
+            done
+
             # curl --silent --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/22/results?api-version=6.0' \
             # --header 'Content-Type: application/json' \
             # --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
