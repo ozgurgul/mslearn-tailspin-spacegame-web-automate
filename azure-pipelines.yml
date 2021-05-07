@@ -295,10 +295,13 @@ stages:
         inputs:
           targetType: 'inline'
           script: |
-
-            function prepareData() {
+            #!/bin/bash
+            
+            prepareData() {
               # iterate over ids
-              for i in $(echo $1)
+              TestCaseId=$(echo $1) 
+
+              for i in $(echo $TestCaseId)
               do
                 id=$(echo $i | cut -f1 -d,)
                 filename="Perf_Benchmarking_$(echo $i | cut -f2 -d, ).json"
