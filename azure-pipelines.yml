@@ -276,7 +276,11 @@ stages:
             
             #| jq '.value[-1] | .id ' )
             
+            echo "Run ID:: $RunId"
+
             TestRunId=$(echo "$RunId" | jq ".value[-1] | .id ")
+
+            echo "Test Run ID:: $TestRunId"
 
             # Write the AnalyticsHostname and AnalyticsAddress variables to the pipeline.
             echo "##vso[task.setvariable variable=TestRunId;isOutput=true]$TestRunId"
