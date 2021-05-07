@@ -296,7 +296,7 @@ stages:
           targetType: 'inline'
           script: |
             #!/bin/bash
-            
+
             prepareData() {
               # iterate over ids
               TestCaseId=$(echo $1) 
@@ -328,7 +328,7 @@ stages:
             jq ".value[] | { id, computerName, testCaseTitle } | [.id,.computerName,.testCaseTitle] | @csv" | \
             sed 's/\\"//g' | sed 's/"//g' )
 
-            $( prepareData $TestCaseId )
+            dataRaw=$(prepareData $TestCaseId)
 
         name: 'RunPatchList'
 
