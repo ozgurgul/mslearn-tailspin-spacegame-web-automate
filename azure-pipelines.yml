@@ -322,8 +322,11 @@ stages:
         inputs:
           targetType: 'inline'
           script: |
+            #!/bin/bash
             iterator=$( echo $(RunPatchList.TestCaseId) | sed 's/\\"//g' | sed 's/"//g' )
 
+            echo $iterator
+            
             # iterate over ids
             for i in `echo $iterator`
             do
