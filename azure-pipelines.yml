@@ -326,16 +326,16 @@ stages:
                   #echo "\`\`\`"
                 ;;
 
-              #   *cpu)
-              #     # alternatively, search with
-              #     # jq '[.[keys[] | select(startswith(\"sysbench.cpu\"))]]'
-              #     echo "id >> $__id "
-              #     echo "server >> $__servername "
-              #     echo "# CPU Benchmark"
-              #     echo "```"
-              #     cat $__filename | jq " . | {\"sysbench.cpu\"} "
-              #     echo "```"
-              #   ;;
+                *cpu)
+                  # alternatively, search with
+                  # jq '[.[keys[] | select(startswith(\"sysbench.cpu\"))]]'
+                  echo "id >> $__id "
+                  echo "server >> $__servername "
+                  echo "# CPU Benchmark"
+                  #echo "```"
+                  cat $__filename | jq " . | {\"sysbench.cpu\"} "
+                  #echo "```"
+                ;;
 
               #   *mem)
               #     # alternatively, search w/
