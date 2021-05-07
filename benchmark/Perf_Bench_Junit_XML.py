@@ -8,6 +8,7 @@ from junit_xml import to_xml_report_file
 def add_test_cases(server):
     
     test_cases = [
+        TestCase(name='Test-info', classname='test.info', elapsed_sec=1, file=f'.\PerformanceTest\Perf_Bench_{server}.json'),
         TestCase(name='Test-cpu', classname='test.cpu', elapsed_sec=1, file=f'.\PerformanceTest\Perf_Bench_{server}.json'),
         TestCase(name='Test-mem', classname='test.mem', elapsed_sec=1, file=f'.\PerformanceTest\Perf_Bench_{server}.json'),
         TestCase(name='Test-io', classname='test.io', elapsed_sec=1, file=f'.\PerformanceTest\Perf_Bench_{server}.json'),
