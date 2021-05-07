@@ -318,18 +318,18 @@ stages:
                     echo "server >> $__servername "
                     echo "# INFO Benchmark"
                     echo "```"
-                    cat $__filename | jq ' . | {"Basic System Information"} '
+                    cat $__filename | jq ' . | {\"Basic System Information\"} '
                     echo "```"
                   ;;
 
                   *cpu)
                     # alternatively, search with
-                    # jq '[.[keys[] | select(startswith("sysbench.cpu"))]]'
+                    # jq '[.[keys[] | select(startswith(\"sysbench.cpu\"))]]'
                     echo "id >> $__id "
                     echo "server >> $__servername "
                     echo "# CPU Benchmark"
                     echo "```"
-                    cat $__filename | jq ' . | {"sysbench.cpu"} '
+                    cat $__filename | jq ' . | {\"sysbench.cpu\"} '
                     echo "```"
                   ;;
 
@@ -340,7 +340,7 @@ stages:
                     echo "server >> $__servername "
                     echo "# MEMORY Benchmark"
                     echo "```"
-                    cat $__filename | jq ' . | {"sysbench.memory"} '
+                    cat $__filename | jq ' . | {\"sysbench.memory\"} '
                     echo "```"
                     
                   ;;
@@ -361,7 +361,7 @@ stages:
                     echo ">> iperf"
                     echo "# MEMOR\Y Benchmark"
                     echo "```"
-                    cat $__filename | jq ' . | {"iperf_test"} '
+                    cat $__filename | jq ' . | {\"iperf_test\"} '
                     echo "```"
                   ;;
                 
