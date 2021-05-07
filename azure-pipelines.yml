@@ -304,18 +304,22 @@ stages:
 
               for i in $(echo $__TestCaseId)
               do
+
                 local __id=$(echo $i | cut -f1 -d, )
                 local __servername=$(echo $i | cut -f2 -d, )
                 local __filename="./PerformanceTest/Perf_Bench_$__servername.json"
                 local __markdown=$(echo $i | cut -f3 -d, ) 
 
-                __resultvar=$(echo "$__resultvar"\n $__id / $__filename / $__markdown )
+                __resultvar=$(echo " $__id / $__filename / $__markdown" )
                 
                 case $__markdown in
                   *info)
                     echo "id >> $__id "
                     echo "server >> $__servername "
+                    echo "# INFO Benchmark"
+                    echo "```"
                     cat $__filename | jq ' . | {"Basic System Information"} '
+                    echo "```"
                   ;;
 
                   *cpu)
@@ -327,7 +331,6 @@ stages:
                     echo "```"
                     cat $__filename | jq ' . | {"sysbench.cpu"} '
                     echo "```"
-                    
                   ;;
 
                   *mem)
@@ -346,6 +349,10 @@ stages:
                     echo "id >> $__id "
                     echo "server >> $__servername "
                     echo ">> fio"
+                    echo "# INFO Benchmark"
+                    echo "```"
+                    echo "more..."
+                    echo "```"
                   ;;
 
                   *iperf)
@@ -356,7 +363,6 @@ stages:
                     echo "```"
                     cat $__filename | jq ' . | {"iperf_test"} '
                     echo "```"
-                    
                   ;;
                 
                 esac
