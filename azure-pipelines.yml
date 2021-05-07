@@ -299,7 +299,7 @@ stages:
 
             prepareData() {
               # iterate over ids
-              TestCaseId=$(echo $1) 
+              TestCaseId=$(echo "$1") 
 
               for i in $(echo $TestCaseId)
               do
