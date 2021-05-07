@@ -323,12 +323,15 @@ stages:
             SignInState%22%3A%7B%7D%7D' `
 
             # DEBUG
-            echo "$PatchList"
+            echo "Here is the Patch List: $PatchList"
+
             TestCaseId=$(echo "$PatchList" | \
             jq ".value[] | { id, computerName, testCaseTitle } | [.id,.computerName,.testCaseTitle] | @csv" | \
             sed 's/\\"//g' | sed 's/"//g' )
 
             dataRaw=$(prepareData $TestCaseId)
+
+            echo "$dataRaw"
 
         name: 'RunPatchList'
 
