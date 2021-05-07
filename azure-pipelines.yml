@@ -319,10 +319,11 @@ stages:
                   echo "id >> $__id "
                   echo "server >> $__servername "
                   echo "# INFO Benchmark"
-                  echo "\`\`\`"
-                      output=$(cat $__filename | jq ' . | {\"Basic System Information\"} ')
-                      echo $output
-                  echo "\`\`\`"
+                  
+                  #echo "\`\`\`"
+                  output=$(cat $__filename | jq ' . | {\"Basic System Information\"} ' )
+                  echo $output
+                  #echo "\`\`\`"
                 ;;
 
               #   *cpu)
