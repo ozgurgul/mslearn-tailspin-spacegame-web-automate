@@ -244,8 +244,8 @@ stages:
           targetType: 'inline'
           script: |
             # give the list of target machines
-            chmod u+x ./benchmark/PerfBenchJunitXML.py 
-            python3 ./benchmark/PerfBenchJunitXML.py vm-01 vm-02 
+            chmod u+x ./benchmark/Perf_git Bench_Junit_XML.py 
+            python3 ./benchmark/Perf_Bench_Junit_XML.py vm-01 vm-02 
 
       # (4) Publish test results to Azure Pipelines
       - task: PublishTestResults@2
@@ -310,11 +310,6 @@ stages:
             TestCaseId=$(echo "$PatchList" | \
             jq ".value[] | { id, computerName, testCaseTitle } | [.id,.computerName,.testCaseTitle] | @csv" | \
             sed 's/\\"//g' | sed 's/"//g' )
-
-            echo "$TestCaseId"
-            echo
-            echo $TestCaseId
-            
 
             # iterate over ids
             for i in $(echo $TestCaseId)
