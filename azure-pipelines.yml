@@ -307,7 +307,7 @@ stages:
 
                 local __id=$(echo $i | cut -f1 -d, )
                 local __servername=$(echo $i | cut -f2 -d, )
-                local __filename="./PerformanceTest/Perf_Bench_$(__servername).json"
+                local __filename="./PerformanceTest/Perf_Bench_$__servername.json"
                 local __markdown=$(echo $i | cut -f3 -d, ) 
 
                 # __resultvar=$(echo " $__id / $__filename / $__markdown" )
