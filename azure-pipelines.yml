@@ -290,6 +290,9 @@ stages:
         name: 'RunCurl'
   
       # (6) Get Patch/Update Test Plan results
+      # (6.a) Get the test plan list ids for each server 
+      # (6.b) Patch the test plan results with the JSON snippet
+      #       Comment in a test case result with maxSize= 1000 chars. 
       - task: Bash@3
         displayName: 'Get test plans which will be patched.'
         inputs:
@@ -302,8 +305,12 @@ stages:
               local __TestCaseId=$(echo "$1") 
               local __resultvar=" \'[ "
            
-              # Examplary data raw
-              # '[
+              # Examplary REST API request to update comments with data-raw
+              # curl --silent --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/22/results?api-version=6.0' \
+              # --header 'Content-Type: application/json' \
+              # --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
+              # --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7df-42f6-bf26-e71893f208ae%22%2C%22PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22SignInState%22%3A%7B%7D%7D' \
+              # --data-raw '[
               #     {
               #         "id": 100000,
               #         "comment": "#  Memory Results \n```\n\"sysbench.cpu\":{\n \"threads\":\"1\",\n\"time\":\"60.0004\", \n \"events\":\"17869\",  \n \"min\":\"2.82\",  \n \"avg\":\"3.36\",  \n \"max\":\"14.46\",  \n \"percentile\":\"3.89\"\n  },\n ```"
@@ -321,18 +328,10 @@ stages:
                 local __servername=$(echo $i | cut -f2 -d, )
                 local __filename="./PerformanceTest/Perf_Bench_$__servername.json"
                 local __markdown=$(echo $i | cut -f3 -d, ) 
-                local __output=""
-
-                # __resultvar=$(echo " $__id / $__filename / $__markdown" )
-                
-                echo " $__id -- $__filename -- $__markdown " 
-                
+                local __output=""                
+      
                 case $__markdown in
                 *info)
-                  
-                  echo "id >> $__id "
-                  echo "server >> $__servername "
-                  
                   __output=$(echo "# INFO Benchmark")
                   __output=$(cat $__filename | jq " . | {\"Basic System Information\"} " )
                   
@@ -341,8 +340,6 @@ stages:
                 *cpu)
                   # alternatively, search with
                   # jq '[.[keys[] | select(startswith(\"sysbench.cpu\"))]]'
-                  echo "id >> $__id "
-                  echo "server >> $__servername "
 
                   __output=$(echo "# CPU Benchmark")
                   __output=$(cat $__filename | jq " . | {\"sysbench.cpu\"} ")
@@ -352,10 +349,8 @@ stages:
                 *mem)
                   # alternatively, search w/
                   # jq '[.[keys[] | select(startswith("sysbench.mem"))]]'
-                  echo "id >> $__id "
-                  echo "server >> $__servername "
-                  __output=$(echo "# MEMORY Benchmark")
 
+                  __output=$(echo "# MEMORY Benchmark")
                   __output=$(cat $__filename | jq " . | {\"sysbench.memory\"} ")   
                   
                 ;;
@@ -371,10 +366,6 @@ stages:
               #   ;;
 
                 *iperf)
-                  echo "id >> $__id "
-                  echo "server >> $__servername "
-                  echo ">> iperf"
-
                   __output=$(echo "# IPERF Benchmark")
                   __output=$(cat $__filename | jq " . | {\"iperf_test\"} ") 
               
@@ -417,39 +408,17 @@ stages:
             # prepare the dataRaw for REST API request                  
             dataRaw=$(prepareData "$TestCaseId")
             
-            echo "This is for REST API >> "
-            echo "$dataRaw" 
+            # Call REST API for patching analysis comments..
 
-            #!/bin/bash
-            
-            echo "---"
-
-          
-
-            # curl --silent --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/22/results?api-version=6.0' \
-            # --header 'Content-Type: application/json' \
-            # --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
-            # --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7df-42f6-bf26-e71893f208ae%22%2C%22PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22SignInState%22%3A%7B%7D%7D' \
-            # --data-raw '[
-            #     {
-            #         "id": 100000,
-            #         "comment": "#  Memory Results \n```\n\"sysbench.cpu\":{\n \"threads\":\"1\",\n\"time\":\"60.0004\", \n \"events\":\"17869\",  \n \"min\":\"2.82\",  \n \"avg\":\"3.36\",  \n \"max\":\"14.46\",  \n \"percentile\":\"3.89\"\n  },\n ```"
-            #     },
-            #     {
-            #         "id": 100001,
-            #         "comment": "Website links are failing because of incorrect container id"
-            #     }
-            # ]'
+            curl --silent --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/22/results?api-version=6.0' \
+            --header 'Content-Type: application/json' \
+            --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
+            --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7df-42f6-bf26-e71893f208ae%22%2C%22PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22SignInState%22%3A%7B%7D%7D' \
+            --data-raw "$dataRaw" 
 
         name: 'RunPatchList'
 
-      # (6.a) Get the test plan list ids for each server 
-      # (6.b) Patch the test plan results with the JSON snippet
-      # Comment in a test case result with maxSize= 1000 chars. 
-      - task: Bash@3
-        displayName: 'Update/Patch the comments of test plan results.'
-        inputs:
-          targetType: 'inline'
-          script: |
+
+ 
             
       # (7) Optional - attach the json files
