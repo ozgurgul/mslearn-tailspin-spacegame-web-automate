@@ -300,7 +300,19 @@ stages:
             function prepareData() {
               # iterate over ids
               local __TestCaseId=$(echo "$1") 
-              local __resultvar=''
+              local __resultvar=" \'[ "
+           
+              # Examplary data raw
+              # '[
+              #     {
+              #         "id": 100000,
+              #         "comment": "#  Memory Results \n```\n\"sysbench.cpu\":{\n \"threads\":\"1\",\n\"time\":\"60.0004\", \n \"events\":\"17869\",  \n \"min\":\"2.82\",  \n \"avg\":\"3.36\",  \n \"max\":\"14.46\",  \n \"percentile\":\"3.89\"\n  },\n ```"
+              #     },
+              #     {
+              #         "id": 100001,
+              #         "comment": "Website links are failing because of incorrect container id"
+              #     }
+              # ]'
 
               for i in $(echo $__TestCaseId)
               do
@@ -309,6 +321,7 @@ stages:
                 local __servername=$(echo $i | cut -f2 -d, )
                 local __filename="./PerformanceTest/Perf_Bench_$__servername.json"
                 local __markdown=$(echo $i | cut -f3 -d, ) 
+                local __output=""
 
                 # __resultvar=$(echo " $__id / $__filename / $__markdown" )
                 
@@ -316,14 +329,13 @@ stages:
                 
                 case $__markdown in
                 *info)
+                  
                   echo "id >> $__id "
                   echo "server >> $__servername "
-                  echo "# INFO Benchmark"
                   
-                  #echo "\`\`\`"
-                  output=$(cat $__filename | jq " . | {\"Basic System Information\"} " )
-                  echo $output
-                  #echo "\`\`\`"
+                  __output=$(echo "# INFO Benchmark")
+                  __output=$(cat $__filename | jq " . | {\"Basic System Information\"} " )
+                  
                 ;;
 
                 *cpu)
@@ -331,23 +343,22 @@ stages:
                   # jq '[.[keys[] | select(startswith(\"sysbench.cpu\"))]]'
                   echo "id >> $__id "
                   echo "server >> $__servername "
-                  echo "# CPU Benchmark"
-                  #echo "```"
-                  cat $__filename | jq " . | {\"sysbench.cpu\"} "
-                  #echo "```"
+
+                  __output=$(echo "# CPU Benchmark")
+                  __output=$(cat $__filename | jq " . | {\"sysbench.cpu\"} ")
+              
                 ;;
 
-              #   *mem)
-              #     # alternatively, search w/
-              #     # jq '[.[keys[] | select(startswith("sysbench.mem"))]]'
-              #     echo "id >> $__id "
-              #     echo "server >> $__servername "
-              #     echo "# MEMORY Benchmark"
-              #     echo "```"
-              #     cat $__filename | jq " . | {\"sysbench.memory\"} "
-              #     echo "```"
+                *mem)
+                  # alternatively, search w/
+                  # jq '[.[keys[] | select(startswith("sysbench.mem"))]]'
+                  echo "id >> $__id "
+                  echo "server >> $__servername "
+                  __output=$(echo "# MEMORY Benchmark")
+
+                  __output=$(cat $__filename | jq " . | {\"sysbench.memory\"} ")   
                   
-              #   ;;
+                ;;
 
               #   *io)
               #     echo "id >> $__id "
@@ -359,20 +370,29 @@ stages:
               #     echo "```"
               #   ;;
 
-              #   *iperf)
-              #     echo "id >> $__id "
-              #     echo "server >> $__servername "
-              #     echo ">> iperf"
-              #     echo "# MEMOR\Y Benchmark"
-              #     echo "```"
-              #     cat $__filename | jq " . | {\"iperf_test\"} "
-              #     echo "```"
-              #   ;;
+                *iperf)
+                  echo "id >> $__id "
+                  echo "server >> $__servername "
+                  echo ">> iperf"
+
+                  __output=$(echo "# IPERF Benchmark")
+                  __output=$(cat $__filename | jq " . | {\"iperf_test\"} ") 
+              
+                ;;
                 
                 esac
 
-              done
+                # Form the JSON structure for payload 
+                __resultvar+=$(echo " { ")
+                __resultvar+="\"id\" : $__id , " 
+                __resultvar+="\"comment\" : \" " 
+                __resultvar+=$__output$(echo " \" } ")
+                __resultvar+=" , "
               
+              done
+
+              __resultvar+=" ] "
+
               echo "$__resultvar"
 
             }
@@ -393,21 +413,13 @@ stages:
             TestCaseId=$(echo "$PatchList" | \
             jq ".value[] | { id, computerName, testCaseTitle } | [.id,.computerName,.testCaseTitle] | @csv" | \
             sed 's/\\"//g' | sed 's/"//g' )
-
+            
+            # prepare the dataRaw for REST API request                  
             dataRaw=$(prepareData "$TestCaseId")
+            
+            echo "This is for REST API >> "
+            echo "$dataRaw" 
 
-            echo "$dataRaw"
-
-        name: 'RunPatchList'
-
-      # (6.a) Get the test plan list ids for each server 
-      # (6.b) Patch the test plan results with the JSON snippet
-      # Comment in a test case result with maxSize= 1000 chars. 
-      - task: Bash@3
-        displayName: 'Update/Patch the comments of test plan results.'
-        inputs:
-          targetType: 'inline'
-          script: |
             #!/bin/bash
             
             echo "---"
@@ -428,4 +440,16 @@ stages:
             #         "comment": "Website links are failing because of incorrect container id"
             #     }
             # ]'
+
+        name: 'RunPatchList'
+
+      # (6.a) Get the test plan list ids for each server 
+      # (6.b) Patch the test plan results with the JSON snippet
+      # Comment in a test case result with maxSize= 1000 chars. 
+      - task: Bash@3
+        displayName: 'Update/Patch the comments of test plan results.'
+        inputs:
+          targetType: 'inline'
+          script: |
+            
       # (7) Optional - attach the json files
