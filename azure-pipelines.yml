@@ -306,11 +306,11 @@ stages:
               local __resultvar=" '[ "
            
               # Examplary REST API request to update comments with data-raw
-              # curl --silent --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/22/results?api-version=6.0' \
+              # curl --silent --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
               # --header 'Content-Type: application/json' \
               # --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
               # --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7df-42f6-bf26-e71893f208ae%22%2C%22PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22SignInState%22%3A%7B%7D%7D' \
-              # --data-raw '[
+              # --data '[
               #     {
               #         "id": 100000,
               #         "comment": "#  Memory Results \n```\n\"sysbench.cpu\":{\n \"threads\":\"1\",\n\"time\":\"60.0004\", \n \"events\":\"17869\",  \n \"min\":\"2.82\",  \n \"avg\":\"3.36\",  \n \"max\":\"14.46\",  \n \"percentile\":\"3.89\"\n  },\n ```"
@@ -417,14 +417,14 @@ stages:
             echo
             echo "-----------------"
             
-            echo "curl --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/22/results?api-version=6.0' \
+            curl --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
             --header 'Content-Type: application/json' \
             --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
             --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7df-42f6-bf26-e71893f208ae%22%2C%22\
             PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             SignInState%22%3A%7B%7D%7D' \
-            --data-raw $dataRaw "
+            --data $dataRaw 
 
         name: 'RunPatchList'
 
