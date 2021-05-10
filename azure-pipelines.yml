@@ -384,8 +384,12 @@ stages:
 
             }
             
-            
+            # Make Directory Structure on VM-01 Preparation
+            TARGET_SERVER=$(tgtServer01)
+            REMOTE_USER=$(remoteUser)
+            SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
 
+            
             # Get the run id
             echo $(RunCurl.TestRunId)
 
@@ -434,6 +438,9 @@ stages:
             ] 
             EOF
             ) 
+            
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+            
 
             curl --location --request PATCH 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
             --header 'Content-Type: application/json' \
@@ -442,21 +449,12 @@ stages:
             PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             SignInState%22%3A%7B%7D%7D' \
-            --data '[
-              {
-                  "id": 100000,
-                  "comment": "#  Memory Results"
-              },
-              {
-                  "id": 100001,
-                  "comment": "Website links are failing because of incorrect container id"
-              }
-            ]' 
+            --data '$body' 
 
             status=$?
             echo "The command exit status : ${status}"
 
-            
+            EOSSH
             
             
         name: 'RunPatchList'
