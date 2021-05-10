@@ -433,7 +433,7 @@ stages:
             echo
             echo ">>>>>>>>>>>>>>>>>" 
 
-            $(commandPatch)  
+            ${commandPatch}  
 
         name: 'RunPatchList'
 
