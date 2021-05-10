@@ -439,28 +439,28 @@ stages:
             --data  @<(cat <<'EOF'
             
             [  { "id" : 100001 , "comment" : " # CPU Benchmark
-            \{
-              \"sysbench.cpu\": \[
-                \{
-                  \"threads\": \"1\",
-                  \"time\": \"60.0022\",
-                  \"events\": \"17825\",
-                  \"min\": \"2.87\",
-                  \"avg\": \"3.37\",
-                  \"max\": \"13.32\",
-                  \"percentile\": \"3.68\"
-                \},
-                \{
-                  \"threads\": \"2\",
-                  \"time\": \"60.0018\",
-                  \"events\": \"34906\",
-                  \"min\": \"2.89\",
-                  \"avg\": \"3.44\",
-                  \"max\": \"14.56\",
-                  \"percentile\": \"3.75\"
-                \}
-              \]
-            \} " }    ,  { "id" : 100008 , "comment" : " # IO Benchmark " }  ,  { "id" : 100009 , "comment" : " # IPERF Benchmark " }  ] 
+            
+              sysbench.cpu: 
+                
+                  threads: 1,
+                  time: 60.0022,
+                  events: 17825,
+                  min: 2.87,
+                  avg: 3.37,
+                  max: 13.32,
+                  percentile: 3.68
+                ,
+                
+                  threads: 2,
+                  time: 60.0018,
+                  events: 34906,
+                  min: 2.89,
+                  avg: 3.44,
+                  max: 14.56,
+                  percentile: 3.75
+                
+              
+              " }    ,  { "id" : 100008 , "comment" : " # IO Benchmark " }  ,  { "id" : 100009 , "comment" : " # IPERF Benchmark " }  ] 
 
             EOF
             ) 
