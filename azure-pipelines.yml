@@ -305,7 +305,7 @@ stages:
               local __TestCaseId=$(echo "$1") 
               local __TestCaseCount=$(echo "$2")
               local __iterator=0
-              local __resultvar=" '[ "
+              local __resultvar=" [ "
            
               # Examplary REST API request to update comments with data-raw
               # curl --silent --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
@@ -378,17 +378,13 @@ stages:
 
               done
 
-              __resultvar+=" ]' "
+              __resultvar+=" ] "
 
               echo "$__resultvar"
 
             }
             
-            function generate_post_data() {
-              cat <<EOF 
-              $dataRaw 
-              EOF    
-            }
+            
 
             # Get the run id
             echo $(RunCurl.TestRunId)
