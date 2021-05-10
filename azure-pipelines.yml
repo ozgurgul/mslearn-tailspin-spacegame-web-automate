@@ -376,7 +376,7 @@ stages:
                 __resultvar+="\"comment\" : \" " 
                 __resultvar+=$__output$(echo " \" } ")
                 
-                __iterator+=1
+                __iterator=$(( $__iterator + 1 ))
                 
                 echo "Iterator: $__iterator of total: $__TestCaseCount "
 
