@@ -432,7 +432,8 @@ stages:
             EOF
             ) 
 
-            
+            status=$?
+            echo "The command exit status : ${status}"
 
             
             
