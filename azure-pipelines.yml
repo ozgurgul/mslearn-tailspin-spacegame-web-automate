@@ -305,7 +305,7 @@ stages:
               local __TestCaseId=$(echo "$1") 
               local __TestCaseCount=$(echo "$2")
               local __iterator=0
-              local __resultvar=" [ "
+              local __resultvar=" '[ "
            
               # Examplary REST API request to update comments with data-raw
               # curl --silent --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
@@ -378,17 +378,10 @@ stages:
 
               done
 
-              __resultvar+=" ] "
+              __resultvar+=" ]' "
 
               echo "$__resultvar"
 
-            }
-
-            function generate_post_data()
-            {
-              cat <<EOF
-              $(prepareData "$TestCaseId" "$TestCaseCount")
-              EOF
             }
             
             echo $(RunCurl.TestRunId)
@@ -423,21 +416,31 @@ stages:
             echo "-----------------"
             echo
             echo
-    
-            curl --location --request PATCH 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
+            $(echo "date")     
+            echo
+            echo
+
+            commandPatch=$(echo "curl --location --request PATCH 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
             --header 'Content-Type: application/json' \
             --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
             --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7df-42f6-bf26-e71893f208ae%22%2C%22\
             PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             SignInState%22%3A%7B%7D%7D' \
-            --data "$(generate_post_data)"  
+            --data "$dataRaw" " ) 
             
             echo
             echo
             echo ">>>>>>>>>>>>>>>>>" 
 
-            
+            echo "$commandPatch" > ./.execfile.$   
+
+            cat ./.execfile.$
+            chmod u+x ./.execfile.$
+
+            bash --init-file ./.execfile.$
+
+          
 
         name: 'RunPatchList'
 
