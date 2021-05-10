@@ -305,7 +305,7 @@ stages:
               local __TestCaseId=$(echo "$1") 
               local __TestCaseCount=$(echo "$2")
               local __iterator=0
-              local __resultvar=" '[ "
+              local __resultvar=" [ "
            
               # Examplary REST API request to update comments with data-raw
               # curl --silent --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
@@ -334,31 +334,31 @@ stages:
       
                 case $__markdown in
                 *info)
-                  __output=$(echo "# INFO Benchmark\n")
-                  #__output+=$(echo ; echo "\`\`\`\n" ; cat $__filename | jq " . | {\"Basic System Information\"} " | sed 's/\"/\\\"/g' ; echo "\`\`\`\n"; echo )   
+                  __output=$(echo "# INFO Benchmark")
+                  #__output+=$(echo ; echo "\`\`\`" ; cat $__filename | jq " . | {\"Basic System Information\"} " | sed 's/\"/\\\"/g' ; echo "\`\`\`"; echo )   
                 ;;
 
                 *cpu)
                   # alternatively, search with
                   # jq '[.[keys[] | select(startswith(\"sysbench.cpu\"))]]'
-                  __output=$(echo "# CPU Benchmark\n")
-                  __output+=$(echo ; echo "\`\`\`\n" ; cat $__filename | jq " . | {\"sysbench.cpu\"} " | sed 's/\"/\\\"/g' ; echo "\`\`\`\n"; echo )
+                  __output=$(echo "# CPU Benchmark")
+                  __output+=$(echo ; echo "\`\`\`" ; cat $__filename | jq " . | {\"sysbench.cpu\"} " | sed 's/\"/\\\"/g' ; echo "\`\`\`"; echo )
                 ;;
 
                 *mem)
-                  __output=$(echo "# MEMORY Benchmark\n")
-                  __output+=$(echo ; echo "\`\`\`\n" ; cat $__filename | jq " . | {\"sysbench.memory\"} " | sed 's/\"/\\\"/g' ; echo "\`\`\`\n"; echo )   
+                  __output=$(echo "# MEMORY Benchmark")
+                  __output+=$(echo ; echo "\`\`\`" ; cat $__filename | jq " . | {\"sysbench.memory\"} " | sed 's/\"/\\\"/g' ; echo "\`\`\`"; echo )   
                 ;;
 
                 *io)
                 # TO-DO: Fix this code.!
-                  __output=$(echo "# IO Benchmark\n")
-                  #__output+=$(echo ; echo "\`\`\`\n" ; cat $__filename | jq " [.[keys[] | select(startswith("fio"))]] " | sed 's/\"/\\\"/g' ; echo "\`\`\`\n"; echo )   
+                __output=$(echo "# IO Benchmark")
+                #__output+=$(echo ; echo "\`\`\`" ; cat $__filename | jq " [.[keys[] | select(startswith("fio"))]] " | sed 's/\"/\\\"/g' ; echo "\`\`\`"; echo )   
                 ;;
 
                 *iperf)
-                  __output=$(echo "# IPERF Benchmark\n")
-                  #__output+=$(echo ; echo "\`\`\`\n" ; cat $__filename | jq " . | {\"iperf_test\"} " | sed 's/\"/\\\"/g' ; echo "\`\`\`\n"; echo ) 
+                  __output=$(echo "# IPERF Benchmark")
+                  #__output+=$(echo ; echo "\`\`\`" ; cat $__filename | jq " . | {\"iperf_test\"} " | sed 's/\"/\\\"/g' ; echo "\`\`\`"; echo ) 
                 ;;
                 
                 esac
@@ -378,10 +378,17 @@ stages:
 
               done
 
-              __resultvar+=" ]' "
+              __resultvar+=" ] "
 
               echo "$__resultvar"
 
+            }
+
+            function generate_post_data()
+            {
+              cat <<EOF
+              $(prepareData "$TestCaseId" "$TestCaseCount")
+              EOF
             }
             
             echo $(RunCurl.TestRunId)
@@ -416,24 +423,21 @@ stages:
             echo "-----------------"
             echo
             echo
-            $(echo "date")     
-            echo
-            echo
-
-            commandPatch=$(echo "curl --location --request PATCH 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
+    
+            curl --location --request PATCH 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
             --header 'Content-Type: application/json' \
             --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
             --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7df-42f6-bf26-e71893f208ae%22%2C%22\
             PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             SignInState%22%3A%7B%7D%7D' \
-            --data "'"$dataRaw"'" " ) 
+            --data "$(generate_post_data)"  
             
             echo
             echo
             echo ">>>>>>>>>>>>>>>>>" 
 
-            ${commandPatch} 
+            
 
         name: 'RunPatchList'
 
