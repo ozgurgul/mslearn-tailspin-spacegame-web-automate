@@ -424,23 +424,25 @@ stages:
             PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             SignInState%22%3A%7B%7D%7D' \
-            --data "$dataRaw" " ) 
+            --data " ) 
             
             echo
             echo
             echo ">>>>>>>>>>>>>>>>>" 
             touch ./.execfile.$$ 
             shellFile=$(ls -1 ./.execfile.$$)
+
             echo "#!/bin/bash" > $shellFile
-            echo "$commandPatch" >> $shellFile   
+            echo "$commandPatch \" >> $shellFile
+            echo "$dataRaw" >> $shellFile    
 
             cat $shellFile
 
             chmod u+x $shellFile
 
-            bash --init-file $shellFile
+            #bash --init-file $shellFile
 
-            rm $shellFile
+            #rm $shellFile
 
         name: 'RunPatchList'
 
