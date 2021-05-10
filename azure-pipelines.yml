@@ -419,6 +419,7 @@ stages:
             echo "-----------------"
             echo
             echo
+            curl --version
 
             curl --location --request PATCH 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
             --header 'Content-Type: application/json' \
