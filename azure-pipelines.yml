@@ -378,7 +378,7 @@ stages:
                 
                 __iterator+=1
 
-                if [[ $__iterator -ne $__TestCaseCount ]]; then
+                if [[ "$__iterator" != $__TestCaseCount ]]; then
                   __resultvar+=" , "
                 fi
 
