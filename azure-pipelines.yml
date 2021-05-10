@@ -377,8 +377,10 @@ stages:
                 __resultvar+=$__output$(echo " \" } ")
                 
                 __iterator+=1
+                
+                echo "Iterator: $__iterator of total: $__TestCaseCount "
 
-                if [[ "$__iterator" != $__TestCaseCount ]]; then
+                if [[ "$__iterator" -ne "$__TestCaseCount" ]]; then
                   __resultvar+=" , "
                 fi
 
