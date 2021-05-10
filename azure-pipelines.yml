@@ -432,7 +432,7 @@ stages:
             CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             SignInState%22%3A%7B%7D%7D' \
             --data @<(cat <<EOF
-            $dataRaw
+            "$dataRaw"
             EOF
             )
 
