@@ -303,6 +303,8 @@ stages:
             function prepareData() {
               # iterate over ids
               local __TestCaseId=$(echo "$1") 
+              local __TestCaseCount=$(echo "$2")
+              local __iterator=1
               local __resultvar=" '[ "
            
               # Examplary REST API request to update comments with data-raw
@@ -373,8 +375,13 @@ stages:
                 __resultvar+="\"id\" : $__id , " 
                 __resultvar+="\"comment\" : \" " 
                 __resultvar+=$__output$(echo " \" } ")
-                __resultvar+=" , "
-              
+                
+                __iterator+=1
+
+                if [[ $__iterator -ne $__TestCaseCount ]];
+                  __resultvar+=" , "
+                fi
+                
               done
 
               __resultvar+=" ]' "
@@ -392,7 +399,7 @@ stages:
             PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             SignInState%22%3A%7B%7D%7D' `
-
+            
             # DEBUG
             echo "Here is the Patch List: $PatchList"
 
@@ -400,8 +407,10 @@ stages:
             jq ".value[] | { id, computerName, testCaseTitle } | [.id,.computerName,.testCaseTitle] | @csv" | \
             sed 's/\\"//g' | sed 's/"//g' )
             
+            TestCaseCount=$(echo "$PatchList" | jq '.count')
+
             # prepare the dataRaw for REST API request                  
-            dataRaw=$(prepareData "$TestCaseId")
+            dataRaw=$(prepareData "$TestCaseId" "$TestCaseCount")
             
             # Call REST API for patching analysis comments..
             echo "-----------------"
