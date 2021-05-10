@@ -378,10 +378,10 @@ stages:
                 
                 __iterator+=1
 
-                if [[ $__iterator -ne $__TestCaseCount ]];
+                if [[ $__iterator -ne $__TestCaseCount ]]; then
                   __resultvar+=" , "
                 fi
-                
+
               done
 
               __resultvar+=" ]' "
