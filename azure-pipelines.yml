@@ -434,7 +434,9 @@ stages:
 
             echo "#!/bin/bash" > $shellFile
             echo "$commandPatch " >> $shellFile
-            echo "$dataRaw" >> $shellFile    
+            echo "cat <<EOF >> $shellFile
+              $dataRaw 
+            EOF    
 
             cat $shellFile
 
