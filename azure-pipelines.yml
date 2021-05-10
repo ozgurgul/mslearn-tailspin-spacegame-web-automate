@@ -438,7 +438,7 @@ stages:
             --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7df-42f6-bf26-e71893f208ae%22%2C%22PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22SignInState%22%3A%7B%7D%7D' \
             --data  @<(cat <<'EOF'
             
-            [  { "id" : 100000 , "comment" : " # INFO Benchmark " }  ,  { "id" : 100001 , "comment" : " # CPU Benchmark
+            [  { "id" : 100001 , "comment" : " # CPU Benchmark
             \{
               \"sysbench.cpu\": \[
                 \{
@@ -460,52 +460,8 @@ stages:
                   \"percentile\": \"3.75\"
                 \}
               \]
-            \} " }  ,  { "id" : 100002 , "comment" : " # MEMORY Benchmark
-            \{
-              \"sysbench.memory\": \{
-                \"transferred\": \"13375.15 MiB/sec\",
-                \"threads\": \"1\",
-                \"events\": \"102400\",
-                \"min\": \"0.06\",
-                \"avg\": \"0.07\",
-                \"max\": \"8.78\",
-                \"percentile\": \"0.10\"
-              \}
-            \} " }  ,  { "id" : 100003 , "comment" : " # IO Benchmark " }  ,  { "id" : 100004 , "comment" : " # IPERF Benchmark " }  ,  { "id" : 100005 , "comment" : " # INFO Benchmark " }  ,  { "id" : 100006 , "comment" : " # CPU Benchmark
-            \{
-              \"sysbench.cpu\": \[
-                \{
-                  \"threads\": \"1\",
-                  \"time\": \"60.0022\",
-                  \"events\": \"17825\",
-                  \"min\": \"2.87\",
-                  \"avg\": \"3.37\",
-                  \"max\": \"13.32\",
-                  \"percentile\": \"3.68\"
-                \},
-                \{
-                  \"threads\": \"2\",
-                  \"time\": \"60.0018\",
-                  \"events\": \"34906\",
-                  \"min\": \"2.89\",
-                  \"avg\": \"3.44\",
-                  \"max\": \"14.56\",
-                  \"percentile\": \"3.75\"
-                \}
-              \]
-            \} " }  ,  { "id" : 100007 , "comment" : " # MEMORY Benchmark
-            \{
-              \"sysbench.memory\": \{
-                \"transferred\": \"13375.15 MiB/sec\",
-                \"threads\": \"1\",
-                \"events\": \"102400\",
-                \"min\": \"0.06\",
-                \"avg\": \"0.07\",
-                \"max\": \"8.78\",
-                \"percentile\": \"0.10\"
-              \}
-            \} " }  ,  { "id" : 100008 , "comment" : " # IO Benchmark " }  ,  { "id" : 100009 , "comment" : " # IPERF Benchmark " }  ] 
-            
+            \} " }    ,  { "id" : 100008 , "comment" : " # IO Benchmark " }  ,  { "id" : 100009 , "comment" : " # IPERF Benchmark " }  ] 
+
             EOF
             ) 
             )
