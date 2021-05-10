@@ -449,8 +449,8 @@ stages:
             --header 'Content-Type: application/json' \
             --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
             --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7df-42f6-bf26-e71893f208ae%22%2C%22PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22SignInState%22%3A%7B%7D%7D' \
-            --data  $(cat <<EOF
-            [
+            --data  @<(cat <<EOF
+            '[
               {
                   "id": 100000,
                   "comment": "#  Memory Results"
@@ -459,7 +459,7 @@ stages:
                   "id": 100001,
                   "comment": "Website links are failing because of incorrect container id"
               }
-            ] 
+            ]' 
             EOF
             )
              
