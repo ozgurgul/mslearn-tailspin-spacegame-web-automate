@@ -416,9 +416,6 @@ stages:
             echo "-----------------"
             echo
             echo
-            $(echo "date")     
-            echo
-            echo
 
             commandPatch=$(echo "curl --location --request PATCH 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
             --header 'Content-Type: application/json' \
@@ -432,15 +429,18 @@ stages:
             echo
             echo
             echo ">>>>>>>>>>>>>>>>>" 
+            touch ./.execfile.$$ 
+            shellFile=$(ls -1 ./.execfile.$$)
+            echo "#!/bin/bash" > $shellFile
+            echo "$commandPatch" >> $shellFile   
 
-            echo "$commandPatch" > ./.execfile.$   
+            cat $shellFile
 
-            cat ./.execfile.$
-            chmod u+x ./.execfile.$
+            chmod u+x $shellFile
 
-            bash --init-file ./.execfile.$
+            bash --init-file $shellFile
 
-          
+            rm $shellFile
 
         name: 'RunPatchList'
 
