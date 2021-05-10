@@ -333,7 +333,7 @@ stages:
                 case $__markdown in
                 *info)
                   __output=$(echo "# INFO Benchmark")
-                  #__output+=$(echo ; cat $__filename | jq " . | {\"Basic System Information\"} " )
+                  #__output+=$(echo ; echo "\`\`\` ; cat $__filename | jq " . | {\"Basic System Information\"} " ; echo "\`\`\`" )
                   
                 ;;
 
@@ -342,7 +342,7 @@ stages:
                   # jq '[.[keys[] | select(startswith(\"sysbench.cpu\"))]]'
 
                   __output=$(echo "# CPU Benchmark")
-                  __output+=$(echo ; cat $__filename | jq " . | {\"sysbench.cpu\"} ")
+                  __output+=$(echo ; echo "\`\`\`; cat $__filename | jq " . | {\"sysbench.cpu\"} " ; echo "\`\`\`" )
               
                 ;;
 
@@ -351,19 +351,14 @@ stages:
                   # jq '[.[keys[] | select(startswith("sysbench.mem"))]]'
 
                   __output=$(echo "# MEMORY Benchmark")
-                  __output+=$(echo ; cat $__filename | jq " . | {\"sysbench.memory\"} ")   
+                  __output+=$(echo ; echo "\`\`\` ; cat $__filename | jq " . | {\"sysbench.memory\"} " ; echo "\`\`\`" )   
                   
                 ;;
 
-              #   *io)
-              #     echo "id >> $__id "
-              #     echo "server >> $__servername "
-              #     echo ">> fio"
-              #     echo "# INFO Benchmark"
-              #     echo "```"
-              #     echo "more..."
-              #     echo "```"
-              #   ;;
+                *io)
+                __output=$(echo "# IO Benchmark")
+                #__output+=$(echo ; echo "\`\`\` ; cat $__filename | jq " [.[keys[] | select(startswith("fio"))]] " ; echo "\`\`\`" )   
+                ;;
 
                 *iperf)
                   __output=$(echo "# IPERF Benchmark")
