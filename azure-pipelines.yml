@@ -432,10 +432,10 @@ stages:
             touch ./.execfile.$$ 
             shellFile=$(ls -1 ./.execfile.$$)
 
-            echo "#!/bin/bash" > $shellFile
-            echo "$commandPatch " >> $shellFile
             cat <<EOF >> $shellFile
-              $dataRaw 
+            #!/bin/bash
+            echo "$commandPatch" 
+            echo "$dataRaw" 
             EOF    
 
             cat $shellFile
