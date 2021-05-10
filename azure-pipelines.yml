@@ -304,7 +304,7 @@ stages:
               # iterate over ids
               local __TestCaseId=$(echo "$1") 
               local __TestCaseCount=$(echo "$2")
-              local __iterator=1
+              local __iterator=0
               local __resultvar=" '[ "
            
               # Examplary REST API request to update comments with data-raw
