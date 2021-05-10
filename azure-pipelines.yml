@@ -335,7 +335,7 @@ stages:
                 case $__markdown in
                 *info)
                   __output=$(echo "# INFO Benchmark")
-                  __output+=$(echo ; echo "\`\`\`" ; cat $__filename | jq " . | {\"Basic System Information\"} " | sed 's/\"/\\\"/g' ; echo "\`\`\`"; echo )   
+                  #__output+=$(echo ; echo "\`\`\`" ; cat $__filename | jq " . | {\"Basic System Information\"} " | sed 's/\"/\\\"/g' ; echo "\`\`\`"; echo )   
                 ;;
 
                 *cpu)
@@ -427,13 +427,13 @@ stages:
             PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             SignInState%22%3A%7B%7D%7D' \
-            --data $dataRaw " ) 
+            --data "$dataRaw" " ) 
             
             echo
             echo
             echo ">>>>>>>>>>>>>>>>>" 
 
-            echo "$commandPatch"   
+            echo -e "$commandPatch"   
 
         name: 'RunPatchList'
 
