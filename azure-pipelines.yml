@@ -433,7 +433,7 @@ stages:
             shellFile=$(ls -1 ./.execfile.$$)
 
             echo "#!/bin/bash" > $shellFile
-            echo "$commandPatch \" >> $shellFile
+            echo "$commandPatch " >> $shellFile
             echo "$dataRaw" >> $shellFile    
 
             cat $shellFile
