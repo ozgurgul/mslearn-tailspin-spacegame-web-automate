@@ -342,7 +342,7 @@ stages:
                   # jq '[.[keys[] | select(startswith(\"sysbench.cpu\"))]]'
 
                   __output=$(echo "# CPU Benchmark")
-                  __output+=$(echo ; echo "\`\`\`" ; cat $__filename | sed 's/\"/\\\"/g' ; echo "\`\`\`" )
+                  __output+=$(echo ; echo "\`\`\`" ; cat $__filename | jq " . | {\"sysbench.cpu\"} " | sed 's/\"/\\\"/g' ; echo "\`\`\`" )
               
                 ;;
 
@@ -411,7 +411,8 @@ stages:
             echo
             echo
             echo "-----------------"
-            
+            echo
+            echo
             echo "curl --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
             --header 'Content-Type: application/json' \
             --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
