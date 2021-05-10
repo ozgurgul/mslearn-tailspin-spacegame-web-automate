@@ -422,7 +422,7 @@ stages:
             curl --version
 
             body=$(cat << EOF
-            [
+             [
               {
                   "id": 100000,
                   "comment": "#  Memory Results"
@@ -431,7 +431,7 @@ stages:
                   "id": 100001,
                   "comment": "Website links are failing because of incorrect container id"
               }
-            ]
+            ] 
             EOF
             ) 
 
@@ -442,7 +442,7 @@ stages:
             PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
             SignInState%22%3A%7B%7D%7D' \
-            --data "$body" 
+            --data "'"$body"'" 
 
             status=$?
             echo "The command exit status : ${status}"
