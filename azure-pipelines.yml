@@ -342,7 +342,7 @@ stages:
                   # alternatively, search with
                   # jq '[.[keys[] | select(startswith(\"sysbench.cpu\"))]]'
                   __output=$(echo "\# CPU Benchmark")
-                  __output+=$(echo ; cat $__filename | jq " . | {\"sysbench.cpu\"} " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo )
+                  #__output+=$(echo ; cat $__filename | jq " . | {\"sysbench.cpu\"} " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo )
                 ;;
 
                 *mem)
@@ -358,7 +358,7 @@ stages:
 
                 *iperf)
                   __output=$(echo "\# IPERF Benchmark")
-                  __output+=$(echo ; cat $__filename | jq " . | {\"iperf_test\"} " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo ) 
+                  #__output+=$(echo ; cat $__filename | jq " . | {\"iperf_test\"} " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo ) 
                 ;;
                 
                 esac
