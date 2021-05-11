@@ -335,7 +335,7 @@ stages:
                 case $__markdown in
                 *info)
                   __output=$(echo "# INFO Benchmark \n")
-                  __output+=$(echo ; echo "\`\`\`"; cat $__filename | jq " . | {\"Basic System Information\"} " | sed 's/\"//g ; s/{//g ; -s/}//g ; s/\[//g ; s/\]//g ' | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g' ; echo "\`\`\`"; echo )   
+                  __output+=$(echo ; echo "\`\`\`"; cat $__filename | jq " . | {\"Basic System Information\"} " | sed 's/\"//g ; s/{//g ; s/}//g ; s/\[//g ; s/\]//g ' | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g' ; echo "\`\`\`"; echo )   
                 ;;
 
                 *cpu)
