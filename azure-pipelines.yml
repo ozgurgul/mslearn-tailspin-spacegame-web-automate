@@ -432,13 +432,15 @@ stages:
                       
             ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
             
+            dataRaw=$(cat ~/.dataRaw)
+            
             echo
             echo "Meeeeee.... Run ID: $(RunCurl.TestRunId)"
-            cat ~/.ssh/environment 
+           
             echo "-----------------"
             echo "${dataRaw}"
             
-            dataRaw=$(cat ~/.dataRaw)
+            
 
             RESULT=$(curl --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
             --header 'Content-Type: application/json' \
