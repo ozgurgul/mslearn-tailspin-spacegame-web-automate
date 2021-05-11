@@ -353,7 +353,7 @@ stages:
                 *io)
                 # TO-DO: Fix this code.!
                   __output=$(echo "\# IO Benchmark")
-                  __output+=$(echo ; cat $__filename | jq " [.[keys[] | select(startswith(\"fio\"))]] " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo )   
+                  #__output+=$(echo ; cat $__filename | jq " [.[keys[] | select(startswith(\"fio\"))]] " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo )   
                 ;;
 
                 *iperf)
