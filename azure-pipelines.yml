@@ -9,20 +9,20 @@ trigger:
 pr: none
 
 variables:
-  buildConfiguration: 'EnvSource'
+  buildConfiguration: 'HPE-SPOKE-PERFBENCH-SANDBOX'
   TestRunId: ${{ 0 }}
 
 stages:
-  - stage: 'Dev'
-    displayName: 'Deploy to the dev environment'
+  - stage: 'PerfBench'
+    displayName: 'Performance Benchmarking on Azure Stack Hub environment'
     jobs:
-    - job: Provision
-      displayName: 'Provision Azure App Service'
+    - job: Gauge
+      displayName: 'Gauge your ASH'
       pool:
         vmImage: 'ubuntu-18.04'
       
       variables:
-      - group: EnvSource
+      - group: HPE-SPOKE-PERFBENCH-SANDBOX
 
       steps:
         # Downloads a secure certificate file and installs to ./.ssh folder
