@@ -1,0 +1,1 @@
+![Result format mapping](./2021_05_04_11_22_26_Publish_Test_Results_task_Azure_Pipelines_Microsoft_Docs.png)

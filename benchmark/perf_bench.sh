@@ -21,9 +21,12 @@
 
 DATE=$( date +"%C%y%m%d_%H%M%S" )
 
-RESULT_OUT=Perf_Benchmarking_$DATE.json
+RESULT_OUT=Perf_Benchmarking.json
 
-set -o allexport; source .env; set +o allexport
+PROJECT_PATH=$1
+cd $PROJECT_PATH
+
+set -o allexport; source ./.env; set +o allexport
 
 FIO_BENCH_MOUNTPOINT=/data/$DATE
 
@@ -83,7 +86,7 @@ ipv4=$( wget -qO- -t1 -T2 icanhazip.com )
 # test if the host has IPv4/IPv6 connectivity
 IPV4_CHECK=$((ping -4 -c 1 -W 4 test-ipv4.com >/dev/null 2>&1 && echo true) || curl -s -4 -m 4 icanhazip.com 2> /dev/null)
 IPV6_CHECK=$((ping -6 -c 1 -W 4 test-ipv6.com >/dev/null 2>&1 && echo true) || curl -s -6 -m 4 icanhazip.com 2> /dev/null)
-ping -6 -c 1 -W 4 ipv6.icanhazip.com
+
 
 # # Colors
 # RED='\033[0;31m'
@@ -473,8 +476,7 @@ calc_disk() {
     echo ${total_size}
 }
 
-echo -e
-date
+echo -e $(date)
 
 # override locale to eliminate parsing errors (i.e. using commas as delimiters rather than periods)
 export LC_ALL=C
@@ -500,7 +502,6 @@ disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot
 disk_total_size=$( calc_disk "${disk_size1[@]}" )
 disk_used_size=$( calc_disk "${disk_size2[@]}" )
 
-clear
 next
 echo -e "Get Sys Perf -- HPE HYBRID CLOUD"
 next

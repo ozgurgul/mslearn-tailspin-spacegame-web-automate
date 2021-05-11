@@ -1,106 +1,497 @@
+# Performance Benchmarking Script on Centos
+# Author: Ozgur Gul (HPE)
+# Date: 2021/04/29
+# Version: 0.1 (Alpha)
+
 trigger:
-  - '*'
-  
+- 'perf-bench-pipeline'
+
+pr: none
+
 variables:
-  buildConfiguration: 'Release'
+  buildConfiguration: 'HPE-SPOKE-PERFBENCH-SANDBOX'
+  TestRunId: ${{ 0 }}
 
 stages:
+  - stage: 'PerfBench'
+    displayName: 'Performance Benchmarking on Azure Stack Hub environment'
+    jobs:
+    - job: Gauge
+      displayName: 'Gauge your ASH'
+      pool:
+        vmImage: 'ubuntu-18.04'
+      
+      variables:
+      - group: HPE-SPOKE-PERFBENCH-SANDBOX
 
-- stage: 'Dev'
-  displayName: 'Deploy to the dev environment'
-  jobs:
-  - job: Provision
-    displayName: 'Provision Azure App Service'
-    pool:
-      vmImage: 'ubuntu-18.04'
-    variables:
-    - group: Release
-    steps:
-    - script: |
-        # Exit when any command returns a failure status.
-        set -e
+      steps:
+        # Downloads a secure certificate file and installs to ./.ssh folder
+      - task: DownloadSecureFile@1
+        name: sshPrivFile
+        displayName: 'Download SSH Private Key File '
+        inputs:
+          secureFile: 'terraform_rsa.pem'
+ 
+      # Soft linking 
+      - task: Bash@3
+        displayName: 'Soft linking the priv key file'
+        inputs:
+          targetType: 'inline'
+          script: |
+              ## DEBUG ##
+              # echo "This is me: $(id)" 
+              ## END ##
+              # Move the pem file
+              echo "Copying $(sshPrivFile.secureFilePath) to the Temp directory..."
+              sudo cp $(sshPrivFile.secureFilePath) $(Agent.TempDirectory)
+              sudo chmod 600 $(Agent.TempDirectory)/terraform_rsa.pem
+     
+      # Prepare the directory structure on VM-02    
+      - task: SSH@0
+        displayName: 'Prepare the directory structure on VM-02'
+        inputs:
+          sshEndpoint: 'vm02SrvConn'
+          runOptions: 'inline'
+          inline: |
+            sudo mkdir -p /data/benchmark
+            sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
+            sudo chmod 2700 /data/benchmark
+          readyTimeout: '40000'
 
-        # Write terraform.tfvars.
-        echo 'location = "'$(ResourceGroupLocation)'"' | tee terraform.tfvars
-        echo 'vm_count = "'$(VmCount)'"' | tee -a terraform.tfvars
-        echo 'vm_image_string = "'$(VmImageString)'"' | tee -a terraform.tfvars
-        echo 'vm_size = "'$(VmSize)'"' | tee -a terraform.tfvars
-        echo 'rg_name = "'$(RgName)'"' | tee -a terraform.tfvars
-        echo 'rg_tag = "'$(RgTag)'"' | tee -a terraform.tfvars
-        echo 'admin_username = "'$(AdminUsername)'"' | tee -a terraform.tfvars
-        echo 'admin_password = "'$(AdminPassword)'"' | tee -a terraform.tfvars
+      # Prepare the directory structure on VM-01    
+      - task: Bash@3
+        displayName: 'Prepare the directory structure on VM-01'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Make Directory Structure on VM-01 Preparation
+            TARGET_SERVER=$(tgtServer01)
+            REMOTE_USER=$(remoteUser)
+            SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
 
-        # Write backend.tfvars. for remote terraform.tfstate on blob storage
-        echo 'resource_group_name = "'$(ResourceGroupName)'"'  | tee backend.tfvars
-        echo 'storage_account_name = "'$(StorageAccountName)'"' | tee -a backend.tfvars
-        echo 'container_name = "tfstate"' | tee -a backend.tfvars
-        echo 'key = "terraform.tfstate"' | tee -a backend.tfvars
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+            
+            ## DEBUG ##
+            # echo "Remote User: $(remoteUser)"
+            ## END ## 
 
-        # Initialize Terraform.
-        terraform init -input=false -backend-config="backend.tfvars"
-        
-        # Apply the Terraform plan.
-        terraform apply -input=false --auto-approve
-        
-        # Get the Analytics name for the dev environment.
-        AnalyticsHostname=$(terraform output hostname) 
-        AnalyticsAddress=$(terraform output public_ip_address) 
-        
-        # Write the AnalyticsHostname and AnalyticsAddress variables to the pipeline.
-        echo "##vso[task.setvariable variable=AnalyticsHostname;isOutput=true]$AnalyticsHostname"
-        echo "##vso[task.setvariable variable=AnalyticsAddress;isOutput=true]$AnalyticsAddress"
-        
-        # Apply the Terraform destroy.
-        # terraform destroy -input=false -auto-approve
+            # Prepare landing directory 
+            sudo mkdir -p /data/benchmark
+            sudo chown -R $(remoteUser):$(remoteUser) /data/benchmark
+            sudo chmod 2700 /data/benchmark
+            
+            ## DEBUG ##
+            # List the content 
+            # VAR1=`ls -al /data/benchmark`
+            # echo "$VAR1"
+            ## END ##
+            
+            EOSSH
+        env:
+          SSH_KEY_FILE: "./.ssh/terraform_rsa.pem" 
+              
+      # CopyFilesOverSSH on vm-01
+      - task: Bash@3
+        displayName: 'CopyFilesOverSSH on vm-01'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Write for VM-01 Preparation
+            TARGET_SERVER=$(tgtServer01)
+            REMOTE_USER=$(remoteUser)
+            SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
 
-      name: 'RunTerraform'
-      displayName: 'Run Terraform'
-      env:
-        ARM_ENDPOINT: $(ARM_ENDPOINT)
-        ARM_CLIENT_ID: $(ARM_CLIENT_ID)
-        ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
-        ARM_TENANT_ID: $(ARM_TENANT_ID)
-        ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-  - deployment: deploy
-    dependsOn: Provision
-    variables:
-      # map the output variable from A into this job
-      AnalyticsHostname: $[ dependencies.Provision.outputs['RunTerraform.AnalyticsHostname'] ]
-      AnalyticsAddress: $[ dependencies.Provision.outputs['RunTerraform.AnalyticsAddress'] ]
-    pool:
-      vmImage: 'ubuntu-18.04'
-    environment: dev
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - script: echo $(AnalyticsAddress) # this step uses the mapped-in variable
-            name: echovar
-          - script: |
-              echo "##vso[task.setvariable variable=AnalyticsAddress;]$(AnalyticsAddress)"
-            displayName: 'Run a one-line script'
-          - script: |
-              echo $(AnalyticsAddress) 
-            displayName: '=== DEBUG LINE ==='
+            echo "FIO_SIZE=$(fioSize)"                          | tee ./benchmark/.env 
+            echo "FIO_OFFSET_INCREMENT=$(fioOffsetIncrement)"   | tee -a ./benchmark/.env 
+            echo "FIO_DIRECT=$(fioDirect)"                      | tee -a ./benchmark/.env
+            echo "FIO_BENCH_QUICK=$(fioBenchQuick)"             | tee -a ./benchmark/.env
+            echo "RUN_IPERF=$(runIperf)"                        | tee -a ./benchmark/.env
+            echo "IPERF_REMOTE_SERVER=$(iperfRemoteServer02)"   | tee -a ./benchmark/.env
+            echo "IPERF_PORT=$(iperfPort)"                      | tee -a ./benchmark/.env
+            
+            # Avoid Pem file is too open
+            chmod 0600 $SSH_KEY_FILE
+            
+            ## DEBUG ##
+            # ls -al ./benchmark/ 
+            ## END ##
           
-          # - task: DownloadSecureFile@1
-          #   name: 'id_rsa'
-          #   displayName: 'Download id_rsa.pub'
-          #   inputs:
-          #     secureFile: 'id_rsa.pub'
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
+            
+            # copy using ssh keys from agent to target machine
+            # to see the transfer progress
+            # ... -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/ ...
+            rsync -q -av -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/  $REMOTE_USER@$TARGET_SERVER:/data/benchmark/
+
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+            
+            # Change Permissions
+            sudo chown -R root:root /data/benchmark/*
+            sudo chmod -R 2700 /data/benchmark/*
+            sudo chmod -R 700 /data/benchmark/*
+            
+            ## DEBUG ##
+            # List the content 
+            # VAR1=`ls -al /data/benchmark`
+            # echo "$VAR1"
+            ## END ##
+
+            EOSSH
+        env:
+          SSH_KEY_FILE: "./.ssh/terraform_rsa.pem"
+
+      # CopyFilesOverSSH on vm-02
+      - task: Bash@3
+        displayName: 'CopyFilesOverSSH on vm-02'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # Write for VM-02 Preparation
+            TARGET_SERVER=$(tgtServer02)
+            REMOTE_USER=$(remoteUser)
+            SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
+            
+            echo "FIO_SIZE=$(fioSize)"                          | tee ./benchmark/.env 
+            echo "FIO_OFFSET_INCREMENT=$(fioOffsetIncrement)"   | tee -a ./benchmark/.env 
+            echo "FIO_DIRECT=$(fioDirect)"                      | tee -a ./benchmark/.env
+            echo "FIO_BENCH_QUICK=$(fioBenchQuick)"             | tee -a ./benchmark/.env
+            echo "RUN_IPERF=$(runIperf)"                        | tee -a ./benchmark/.env
+            echo "IPERF_REMOTE_SERVER=$(iperfRemoteServer01)"   | tee -a ./benchmark/.env
+            echo "IPERF_PORT=$(iperfPort)"                      | tee -a ./benchmark/.env
+            
+            # Pem file is too open
+            chmod 0600 $SSH_KEY_FILE
+            
+            ## DEBUG ## 
+            # REMOVE when ready
+            # ls -al ./benchmark/ 
           
-          # - script: |
-          #     echo Installing the .ssh directory...
-          #     sudo chown root:root $(caCertificate.secureFilePath)
-          #     sudo chmod a+r $(caCertificate.secureFilePath)
-          #     sudo ln -s -t /etc/ssl/certs/ $(caCertificate.secureFilePath)
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
+            
+            # copy using ssh keys from agent to target machine
+            # to see the transfer progress
+            # ... -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/ ...
+            rsync -q -av -e "ssh -q -i $SSH_KEY_FILE" --progress ./benchmark/  $REMOTE_USER@$TARGET_SERVER:/data/benchmark/
 
-          # - task: InstallSSHKey@0
-          #   displayName: 'Install an SSH key'
-          #   inputs:
-          #     knownHostsEntry: 'SHA256:1Hyrss55tsxGifESBMc0s+2NtutnR/4+LOkVwrOGrIp8U johndoe@contoso'
-          #     sshPublicKey: '$(myPubKey)'
-          #     sshKeySecureFile: 'id_rsa'
-        
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+            
+            # Change Permissions
+            sudo chown -R root:root /data/benchmark/*
+            sudo chmod -R 2700 /data/benchmark/*
+            sudo chmod -R 700 /data/benchmark/*
 
-       
+            ## DEBUG ##
+            # List the content 
+            # VAR1=`ls -al /data/benchmark`
+            # echo "$VAR1"
+            ## END ##
+
+            EOSSH
+        env:
+          SSH_KEYFILE: "./.ssh/terraform_rsa.pem"
+          
+      - task: SSH@0
+        displayName: 'Start the iperf on vm-02 as a daemon'
+        inputs:
+          sshEndpoint: 'vm02SrvConn'
+          runOptions: 'inline'
+          inline: |
+            # kill if there is any iperf server running
+            pgrep -x iperf3 >/dev/null && sudo pgrep -x iperf3 | xargs sudo kill || echo "Process not found" 
+
+            nohup sudo iperf3 -s -p 8010 </dev/null >/dev/null 2>&1 &
+          readyTimeout: '20000'
+
+      # - task: SSH@0
+      #   displayName: 'Gather Performance Benchmarking stats'
+      #   inputs:
+      #     sshEndpoint: 'vm01SrvConn'
+      #     runOptions: 'inline'
+      #     inline: |
+      #       cd /data/benchmark
+      #       sudo ./perf_bench.sh /data/benchmark
+      #     readyTimeout: '20000'
+
+      - task: SSH@0
+        displayName: 'Stop the iperf on vm-02'
+        inputs:
+          sshEndpoint: 'vm02SrvConn'
+          runOptions: 'inline'
+          inline: |
+            # kill if there is any iperf server running
+            pgrep -x iperf3 >/dev/null && sudo pgrep -x iperf3 | xargs sudo kill || echo "Process not found"  
+          readyTimeout: '40000'
+
+      # Reutilise the JSON file 
+      # meaning regenarate the JUNIT file with XML
+      # Meaning copy to pool agent from target machines 
+      
+      # (2) Install pip modules on pool agent
+      - task: Bash@3
+        displayName: 'Install python module junit_xml==1.9'
+        inputs:
+          targetType: 'inline'
+          script: |
+            # pip install on the pool agent
+            pip3 install junit_xml==1.9 six==1.15.0
+   
+      # (3) Run python PerfBenchJunitXML.py on pool agent
+      # - task: Bash@3
+      #   displayName: 'Run python PerfBenchJunitXML.py on pool agent'
+      #   inputs:
+      #     targetType: 'inline'
+      #     script: |
+      #       # give the list of target machines
+      #       chmod u+x ./benchmark/Perf_git Bench_Junit_XML.py 
+      #       python3 ./benchmark/Perf_Bench_Junit_XML.py vm-01 vm-02
+      
+      # Python script
+      # Run a Python file or inline script
+      - task: PythonScript@0
+        inputs:
+          scriptSource: 'inline' # Options: filePath, inline
+          script: | # Required when scriptSource == inline
+            import sys
+            import os
+            from datetime import datetime   
+            from junit_xml import TestSuite, TestCase
+            from junit_xml import to_xml_report_file
+
+            def add_test_cases(server):
+                
+                test_cases = [
+                    TestCase(name='Test-info', classname='test.info', elapsed_sec=1, file=f'.\PerformanceTest\Perf_Bench_{server}.json'),
+                    TestCase(name='Test-cpu', classname='test.cpu', elapsed_sec=1, file=f'.\PerformanceTest\Perf_Bench_{server}.json'),
+                    TestCase(name='Test-mem', classname='test.mem', elapsed_sec=1, file=f'.\PerformanceTest\Perf_Bench_{server}.json'),
+                    TestCase(name='Test-io', classname='test.io', elapsed_sec=1, file=f'.\PerformanceTest\Perf_Bench_{server}.json'),
+                    TestCase(name='Test-iperf', classname='test.iperf', elapsed_sec=1, file=f'.\PerformanceTest\Perf_Bench_{server}.json')
+                ]
+
+                ts = TestSuite(f"Performance Benchmarking on {server}", test_cases)
+                ts.hostname = f'{server}'
+                return ts
+
+
+            def main(argv):
+                    
+                # pretty printing is on by default but can be disabled using prettyprint=False
+                ts = map(add_test_cases, argv)
+                to_file_str = TestSuite.to_xml_string(ts)
+
+                # Get the current time
+                utc_datetime = datetime.utcnow()
+                time_str = utc_datetime.strftime("%Y%m%d_%H%M%S")
+                
+                # you can also write the XML to a file and not pretty print it
+                with open('./PerformanceTest/' + 'TEST-{date}.xml'.format(date=time_str), 'w') as f:
+                    f.write(to_file_str)
+
+                
+            if __name__ == "__main__":
+                print(f'List Length:{len(sys.argv)}' )
+                print(f'Argument List:{str(sys.argv)}' )
+
+                # Avoid the first item in the list
+                main(sys.argv[1:])
+          
+           
+          arguments: 'vm-01 vm-02' # Optional
+          pythonInterpreter: '/usr/bin/python3' # Optional
+          #workingDirectory: # Optional
+          #failOnStderr: false # Optional
+
+      # (4) Publish test results to Azure Pipelines
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'JUnit' # Options: JUnit, NUnit, VSTest, xUnit, cTest
+          testResultsFiles: '**/TEST-*.xml' 
+          searchFolder: '$(System.DefaultWorkingDirectory)' # Optional
+          mergeTestResults: false # Optional
+          failTaskOnFailedTests: false # Optional
+          testRunTitle: Performance Benchmarking # Optional
+          buildPlatform: x64 # Optional
+          buildConfiguration: Release # Optional
+          publishRunAttachments: true # Optional
+      
+      # (5) Get Test Result list 
+      - task: Bash@3
+        displayName: 'Get top run id of test runs.'
+        inputs:
+          targetType: 'inline'
+          script: |
+            #!/bin/bash
+            
+            # Get a list of test runs and filter the top one
+            RunId=`curl --silent --location --request GET 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/runs?api-version=6.0' \
+            --header 'Authorization: Basic aGVsbG86NzR5bWZqcmZjcWd0ZTNpb2ZjdDVraWlva2R1d2Q2ZXR6aXlmYzJodzdxMzVzcmNkeDJjcQ==' \
+            --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7d9f-42f6-bf26-e71893f208ae%22%2C%22\
+            PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000\
+            %22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000\
+            %22%2C%22SignInState%22%3A%7B%7D%7D' ` 
+            
+            # DEBUG
+            # echo "Run ID:: $RunId"
+
+            TestRunId=$(echo "$RunId" | jq ".value[-1] | .id ")
+
+            # DEBUG
+            # echo "Test Run ID:: $TestRunId"
+
+            # Write the AnalyticsHostname and AnalyticsAddress variables to the pipeline.
+            
+            echo "##vso[task.setvariable variable=TestRunId;isOutput=true]$TestRunId"
+
+        name: 'RunCurl'
+  
+      # (6) Get Patch/Update Test Plan results
+      # (6.a) Get the test plan list ids for each server 
+      # (6.b) Patch the test plan results with the JSON snippet
+      #       Comment in a test case result with maxSize= 1000 chars. 
+      - task: Bash@3
+        displayName: 'Get test plans which will be patched.'
+        inputs:
+          targetType: 'inline'
+          script: |
+            #!/bin/bash
+
+            function prepareData() {
+              # iterate over ids
+              local __TestCaseId=$(echo "$1") 
+              local __TestCaseCount=$(echo "$2")
+              local __iterator=0
+              local __resultvar=" [ "
+           
+              # Examplary REST API request to update comments with data-raw
+              # curl --silent --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
+              # --header 'Content-Type: application/json' \
+              # --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
+              # --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7df-42f6-bf26-e71893f208ae%22%2C%22PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22SignInState%22%3A%7B%7D%7D' \
+              # --data '[
+              #     {
+              #         "id": 100000,
+              #         "comment": "#  Memory Results \n```\n\"sysbench.cpu\":{\n \"threads\":\"1\",\n\"time\":\"60.0004\", \n \"events\":\"17869\",  \n \"min\":\"2.82\",  \n \"avg\":\"3.36\",  \n \"max\":\"14.46\",  \n \"percentile\":\"3.89\"\n  },\n ```"
+              #     },
+              #     {
+              #         "id": 100001,
+              #         "comment": "Website links are failing because of incorrect container id"
+              #     }
+              # ]'
+
+              for i in $(echo $__TestCaseId)
+              do
+
+                local __id=$(echo $i | cut -f1 -d, )
+                local __servername=$(echo $i | cut -f2 -d, )
+                local __filename="./PerformanceTest/Perf_Bench_$__servername.json"
+                local __markdown=$(echo $i | cut -f3 -d, ) 
+                local __output=""                
+      
+                case $__markdown in
+                *info)
+                  __output=$(echo "# INFO Benchmark \n")
+                  __output+=$(echo ; echo "\`\`\`"; cat $__filename | jq " . | {\"Basic System Information\"} " | sed 's/\"//g ; s/{//g ; s/}//g ; s/\[//g ; s/\]//g ' | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g' ; echo "\`\`\`"; echo )   
+                ;;
+
+                *cpu)
+                  # alternatively, search with
+                  # jq '[.[keys[] | select(startswith(\"sysbench.cpu\"))]]'
+                  __output=$(echo "# CPU Benchmark \n")
+                  __output+=$(echo ; echo "\`\`\`"; cat $__filename | jq " . | {\"sysbench.cpu\"} " | sed 's/\"//g ; s/{//g ; s/}//g ; s/\[//g ; s/\]//g ' | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g' ; echo "\`\`\`"; echo )
+                ;;
+
+                *mem)
+                  __output=$(echo "# MEMORY Benchmark \n")
+                  __output+=$(echo ; echo "\`\`\`"; cat $__filename | jq " . | {\"sysbench.memory\"} " | sed 's/\"//g ; s/{//g ; s/}//g ; s/\[//g ; s/\]//g ' | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g' ; echo "\`\`\`"; echo )   
+                ;;
+
+                *io)
+                # TO-DO: Fix this code.!
+                  __output=$(echo "# IO Benchmark \n")
+                  #__output+=$(echo ; echo "\`\`\`"; cat $__filename | jq " [.[keys[] | select(startswith(\"fio\"))]] " | sed 's/\"//g ; s/{//g ; s/}//g ; s/\[//g ; s/\]//g '  | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g' ; echo "\`\`\`"; echo )   
+                ;;
+
+                *iperf)
+                  __output=$(echo "# IPERF Benchmark \n")
+                  __output+=$(echo ; echo "\`\`\`"; cat $__filename | jq " . | {\"iperf_test\"} " | sed 's/\"//g ; s/{//g ; s/}//g ; s/\[//g ; s/\]//g ' | sed -E ':a;N;$!ba;s/\r{0,1}\n/\\n/g' ; echo "\`\`\`"; echo ) 
+                ;;
+                
+                esac
+
+                # Form the JSON structure for payload 
+                __resultvar+=$(echo " { ")
+                __resultvar+="\"id\" : $__id , " 
+                __resultvar+="\"comment\" : \" " 
+                __resultvar+=$__output$(echo " \" } ")
+                
+                # append comma whilst iterating
+                __iterator=$(( $__iterator + 1 ))
+                
+                if [[ "$__iterator" -ne "$__TestCaseCount" ]]; then
+                  __resultvar+=" , "
+                fi
+
+              done
+
+              __resultvar+=" ] "
+
+              echo $__resultvar
+
+            }
+            
+            # Make Directory Structure on VM-01 Preparation
+            TARGET_SERVER=$(tgtServer01)
+            REMOTE_USER=$(remoteUser)
+            SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
+
+            # DEBUG
+            # Get the run id
+            # echo $(RunCurl.TestRunId)
+
+            PatchList=`curl --silent --location --request GET 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
+            --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7df-42f6-bf26-e71893f208ae%22%2C%22\
+            PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
+            CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22\
+            SignInState%22%3A%7B%7D%7D' `
+            
+            # DEBUG
+            # echo "Here is the Patch List: $PatchList"
+
+            TestCaseId=$(echo "$PatchList" | \
+            jq ".value[] | { id, computerName, testCaseTitle } | [.id,.computerName,.testCaseTitle] | @csv" | \
+            sed 's/\\"//g' | sed 's/"//g' )
+            
+            TestCaseCount=$(echo "$PatchList" | jq '.count')
+
+            # prepare the dataRaw for REST API request                  
+            dataRaw=$(prepareData "$TestCaseId" "$TestCaseCount")
+            
+            # Call REST API for patching analysis comments..
+            echo "${dataRaw}" > dataRaw
+            
+            # Move patch data script to a target server 
+            scp -i $SSH_KEY_FILE ./dataRaw $REMOTE_USER@$TARGET_SERVER:~/.dataRaw
+
+            # Run curl command on the target server          
+            ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
+            
+            dataRaw=$(cat ~/.dataRaw)
+
+            RESULT=$(curl --location --request PATCH 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
+            --header 'Content-Type: application/json' \
+            --header 'Authorization: Basic UG9zdG1hblBBVDo3NHltZmpyZmNxZ3RlM2lvZmN0NWtpaW9rZHV3ZDZldHppeWZjMmh3N3EzNXNyY2R4MmNx' \
+            --header 'Cookie: VstsSession=%7B%22PersistentSessionId%22%3A%22ae7a874d-e7df-42f6-bf26-e71893f208ae%22%2C%22PendingAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22CurrentAuthenticationSessionId%22%3A%2200000000-0000-0000-0000-000000000000%22%2C%22SignInState%22%3A%7B%7D%7D' \
+            --data  "$dataRaw" )
+
+      
+            status=$?
+            echo "The command exit status : ${status}"
+            echo $RESULT
+
+            EOSSH
+            
+            
+        name: 'RunPatchList'
+            
+      # (7) Optional - attach the json files
