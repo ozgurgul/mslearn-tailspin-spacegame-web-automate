@@ -39,7 +39,7 @@ stages:
           targetType: 'inline'
           script: |
               ## DEBUG ##
-              echo "This is me: $(id)" 
+              # echo "This is me: $(id)" 
               ## END ##
               # Move the pem file
               echo "Copying $(sshPrivFile.secureFilePath) to the Temp directory..."
@@ -72,7 +72,7 @@ stages:
             ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no -T $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
             
             ## DEBUG ##
-            echo "Remote User: $(remoteUser)"
+            # echo "Remote User: $(remoteUser)"
             ## END ## 
 
             # Prepare landing directory 
@@ -82,15 +82,13 @@ stages:
             
             ## DEBUG ##
             # List the content 
-            VAR1=`ls -al /data/benchmark`
-            echo "$VAR1"
+            # VAR1=`ls -al /data/benchmark`
+            # echo "$VAR1"
             ## END ##
             
             EOSSH
         env:
-          SSH_KEY_FILE: "./.ssh/terraform_rsa.pem"
-
-     
+          SSH_KEY_FILE: "./.ssh/terraform_rsa.pem" 
               
       # CopyFilesOverSSH on vm-01
       - task: Bash@3
@@ -115,7 +113,7 @@ stages:
             chmod 0600 $SSH_KEY_FILE
             
             ## DEBUG ##
-            ls -al ./benchmark/ 
+            # ls -al ./benchmark/ 
             ## END ##
           
             ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
@@ -134,8 +132,8 @@ stages:
             
             ## DEBUG ##
             # List the content 
-            VAR1=`ls -al /data/benchmark`
-            echo "$VAR1"
+            # VAR1=`ls -al /data/benchmark`
+            # echo "$VAR1"
             ## END ##
 
             EOSSH
@@ -164,8 +162,9 @@ stages:
             # Pem file is too open
             chmod 0600 $SSH_KEY_FILE
             
-            ## REMOVE when ready
-            ls -al ./benchmark/ 
+            ## DEBUG ## 
+            # REMOVE when ready
+            # ls -al ./benchmark/ 
           
             ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER "date"
             
@@ -183,15 +182,14 @@ stages:
 
             ## DEBUG ##
             # List the content 
-            VAR1=`ls -al /data/benchmark`
-            echo "$VAR1"
+            # VAR1=`ls -al /data/benchmark`
+            # echo "$VAR1"
             ## END ##
 
             EOSSH
         env:
           SSH_KEYFILE: "./.ssh/terraform_rsa.pem"
           
-
       - task: SSH@0
         displayName: 'Start the iperf on vm-02 as a daemon'
         inputs:
@@ -277,16 +275,17 @@ stages:
             %22%2C%22SignInState%22%3A%7B%7D%7D' ` 
             
             # DEBUG
-            echo "Run ID:: $RunId"
+            # echo "Run ID:: $RunId"
 
             TestRunId=$(echo "$RunId" | jq ".value[-1] | .id ")
 
             # DEBUG
-            echo "Test Run ID:: $TestRunId"
+            # echo "Test Run ID:: $TestRunId"
 
             # Write the AnalyticsHostname and AnalyticsAddress variables to the pipeline.
             
             echo "##vso[task.setvariable variable=TestRunId;isOutput=true]$TestRunId"
+
         name: 'RunCurl'
   
       # (6) Get Patch/Update Test Plan results
@@ -389,9 +388,9 @@ stages:
             REMOTE_USER=$(remoteUser)
             SSH_KEY_FILE=$(Agent.TempDirectory)/terraform_rsa.pem
 
-            
+            # DEBUG
             # Get the run id
-            echo $(RunCurl.TestRunId)
+            # echo $(RunCurl.TestRunId)
 
             PatchList=`curl --silent --location --request GET 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
             --header 'Content-Type: application/x-www-form-urlencoded' \
@@ -402,7 +401,7 @@ stages:
             SignInState%22%3A%7B%7D%7D' `
             
             # DEBUG
-            echo "Here is the Patch List: $PatchList"
+            # echo "Here is the Patch List: $PatchList"
 
             TestCaseId=$(echo "$PatchList" | \
             jq ".value[] | { id, computerName, testCaseTitle } | [.id,.computerName,.testCaseTitle] | @csv" | \
@@ -414,33 +413,15 @@ stages:
             dataRaw=$(prepareData "$TestCaseId" "$TestCaseCount")
             
             # Call REST API for patching analysis comments..
-            echo "-----------------"
-            echo
-            echo
-            echo "${dataRaw}"
-            echo
-            echo
-            echo "-----------------"
-            echo
-            echo
-            
             echo "${dataRaw}" > dataRaw
             
-            
+            # Move patch data script to a target server 
             scp -i $SSH_KEY_FILE ./dataRaw $REMOTE_USER@$TARGET_SERVER:~/.dataRaw
 
-                      
+            # Run curl command on the target server          
             ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
             
             dataRaw=$(cat ~/.dataRaw)
-
-            echo
-            echo "Meeeeee.... Run ID: $(RunCurl.TestRunId)"
-           
-            echo "-----------------"
-            echo "${dataRaw}"
-            
-            
 
             RESULT=$(curl --location --request PATCH 'https://dev.azure.com/sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
             --header 'Content-Type: application/json' \
@@ -457,8 +438,5 @@ stages:
             
             
         name: 'RunPatchList'
-
-
- 
             
       # (7) Optional - attach the json files
