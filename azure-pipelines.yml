@@ -424,10 +424,10 @@ stages:
             echo
             echo
             
-            echo "dataRaw=${dataRaw}" > sshenv
+            echo "${dataRaw}" > dataRaw
             
             
-            scp -i $SSH_KEY_FILE ./sshenv $REMOTE_USER@$TARGET_SERVER:~/.ssh/environment
+            scp -i $SSH_KEY_FILE ./dataRaw $REMOTE_USER@$TARGET_SERVER:~/.dataRaw
 
                       
             ssh -q -i $SSH_KEY_FILE -o StrictHostKeyChecking=no $REMOTE_USER@$TARGET_SERVER <<'EOSSH'
@@ -438,7 +438,7 @@ stages:
             echo "-----------------"
             echo "${dataRaw}"
             
-            source ~/.ssh/environment
+            dataRaw=$(cat ~/.dataRaw)
 
             RESULT=$(echo "curl --location --request PATCH 'https://dev.azure.com//sandpit-devops/PerformanceBenchmarking/_apis/test/Runs/$(RunCurl.TestRunId)/results?api-version=6.0' \
             --header 'Content-Type: application/json' \
