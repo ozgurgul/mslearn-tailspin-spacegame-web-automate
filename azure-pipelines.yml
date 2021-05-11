@@ -334,31 +334,31 @@ stages:
       
                 case $__markdown in
                 *info)
-                  __output=$(echo "\\# INFO Benchmark")
-                  #__output+=$(echo ; cat $__filename | jq " . | {\"Basic System Information\"} " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo )   
+                  __output=$(echo "INFO Benchmark")
+                  __output+=$(echo ; cat $__filename | jq " . | {\"Basic System Information\"} " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo )   
                 ;;
 
                 *cpu)
                   # alternatively, search with
                   # jq '[.[keys[] | select(startswith(\"sysbench.cpu\"))]]'
-                  __output=$(echo "\\# CPU Benchmark")
-                  #__output+=$(echo ; cat $__filename | jq " . | {\"sysbench.cpu\"} " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo )
+                  __output=$(echo "CPU Benchmark")
+                  __output+=$(echo ; cat $__filename | jq " . | {\"sysbench.cpu\"} " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo )
                 ;;
 
                 *mem)
-                  __output=$(echo "\\# MEMORY Benchmark")
+                  __output=$(echo "MEMORY Benchmark")
                   __output+=$(echo ; cat $__filename | jq " . | {\"sysbench.memory\"} " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo )   
                 ;;
 
                 *io)
                 # TO-DO: Fix this code.!
-                  __output=$(echo "\\# IO Benchmark")
+                  __output=$(echo "IO Benchmark")
                   #__output+=$(echo ; cat $__filename | jq " [.[keys[] | select(startswith(\"fio\"))]] " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo )   
                 ;;
 
                 *iperf)
-                  __output=$(echo "\\# IPERF Benchmark")
-                  #__output+=$(echo ; cat $__filename | jq " . | {\"iperf_test\"} " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo ) 
+                  __output=$(echo "IPERF Benchmark")
+                  __output+=$(echo ; cat $__filename | jq " . | {\"iperf_test\"} " | sed 's/\"//g ; s/{//g ; s/}//g ;  s/\[//g ;  s/\]//g ' ; echo ) 
                 ;;
                 
                 esac
